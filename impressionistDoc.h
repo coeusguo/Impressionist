@@ -12,6 +12,8 @@
 
 class ImpressionistUI;
 
+//the type of the line brush direction control
+enum {SLIDER_RMOUSE = 0,GRADIENT,CURSOR};
 class ImpressionistDoc 
 {
 public:
@@ -25,6 +27,7 @@ public:
 
 	int     clearCanvas();                  // called by the UI to clear the drawing canvas
 	void	setBrushType(int type);			// called by the UI to set the brushType
+	void	setBrushDirectionType(int type);
 	int		getSize();						// get the UI size
 	int		getLineWidth();
 	int		getLineAngle();
@@ -48,6 +51,10 @@ public:
 
 	// The current active brush.
 	ImpBrush*			m_pCurrentBrush;	
+	
+	//current active line brush direction control type
+	int m_pControlType;
+
 	// Size of the brush.
 	int m_nSize;							
 	//width of the (scatter) line brush

@@ -19,7 +19,7 @@
 #include "ScatterCircle.h"
 #include "ScatterLine.h"
 #include "ScatterPoint.h"
-
+#include <iostream>
 
 
 #define DESTROY(p)	{  if ((p)!=NULL) {delete [] p; p=NULL; } }
@@ -84,6 +84,14 @@ void ImpressionistDoc::setBrushType(int type)
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[type];
 }
 
+//---------------------------------------------------------
+// Called by the UI when the user changes the type of the line brush direction control.
+// type: one of the defined brush dirction control (requirement #3).
+//---------------------------------------------------------
+void ImpressionistDoc::setBrushDirectionType(int type) {
+	m_pControlType = type;
+	std::cout << type;
+}
 //---------------------------------------------------------
 // Returns the size of the brush.
 //---------------------------------------------------------
