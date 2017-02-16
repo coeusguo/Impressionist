@@ -428,6 +428,7 @@ Fl_Menu_Item ImpressionistUI::brushTypeMenu[NUM_BRUSH_TYPE+1] = {
   {"Scattered Points",	FL_ALT+'q', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_SCATTERED_POINTS},
   {"Scattered Lines",	FL_ALT+'m', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_SCATTERED_LINES},
   {"Scattered Circles",	FL_ALT+'d', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_SCATTERED_CIRCLES},
+  { "Gray",	FL_ALT + 'r', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_GRAY_POINTS },
   {0}
 };
 
@@ -462,7 +463,7 @@ ImpressionistUI::ImpressionistUI() {
 			// install original view window
 			m_origView = new OriginalView(0, 25, 300, 275, "This is the orig view");//300jon
 			m_origView->box(FL_DOWN_FRAME);
-			m_origView->deactivate();
+			//m_origView->deactivate();
 
 		group->end();
 		Fl_Group::current()->resizable(group);
