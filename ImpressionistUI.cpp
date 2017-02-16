@@ -206,6 +206,7 @@ void ImpressionistUI::cb_save_image(Fl_Menu_* o, void* v)
 void ImpressionistUI::cb_brushes(Fl_Menu_* o, void* v) 
 {
 	whoami(o)->m_brushDialog->show();
+	
 }
 
 //------------------------------------------------------------
@@ -256,6 +257,14 @@ void ImpressionistUI::cb_brushChoice(Fl_Widget* o, void* v)
 
 
 	pDoc->setBrushType(type);
+	if (type != BRUSH_LINES && type != BRUSH_SCATTERED_LINES) {
+		pUI->m_LineWidthSlider->deactivate();
+		pUI->m_LineAngleSlider->deactivate();
+	}
+	else {
+		pUI->m_LineWidthSlider->activate();
+		pUI->m_LineAngleSlider->activate();
+	}
 }
 
 //------------------------------------------------------------
@@ -521,7 +530,10 @@ ImpressionistUI::ImpressionistUI() {
 		m_AlphaSlider->value(m_nAlpha);
 		m_AlphaSlider->align(FL_ALIGN_RIGHT);
 		m_AlphaSlider->callback(cb_AlphaSlides);
-
+		
+		//disable line width slider and angle slider 
+		m_LineWidthSlider->deactivate();
+		m_LineAngleSlider->deactivate();
     m_brushDialog->end();	
 
 }

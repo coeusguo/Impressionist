@@ -59,3 +59,6 @@ void ScatterCircle::BrushEnd(const Point source, const Point target)
 	// do nothing so far
 }
 
+char* ScatterCircle::BrushName(void) {
+	return CircleBrush::BrushName();
+}

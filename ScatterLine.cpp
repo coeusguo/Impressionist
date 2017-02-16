@@ -58,3 +58,6 @@ void ScatterLine::BrushEnd(const Point source, const Point target)
 	// do nothing so far
 }
 
+char* ScatterLine::BrushName(void) {
+	return LineBrush::BrushName();
+}

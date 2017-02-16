@@ -61,3 +61,6 @@ void CircleBrush::BrushEnd(const Point source, const Point target)
 	// do nothing so far
 }
 
+char* CircleBrush::BrushName(void) {
+	return ImpBrush::BrushName();
+}

@@ -59,3 +59,6 @@ void ScatterPoint::BrushEnd(const Point source, const Point target)
 	// do nothing so far
 }
 
+char* ScatterPoint::BrushName(void) {
+	return PointBrush::BrushName();
+}
