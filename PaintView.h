@@ -30,6 +30,18 @@ public:
 
 	void RestoreContent();
 
+	int getStartRow()const;
+
+	int getEndRow()const;
+
+	int getStartCol()const;
+
+	int getEndCol()const;
+
+	int getDrawHeight()const;
+
+
+
 	ImpressionistDoc *m_pDoc;
 
 private:

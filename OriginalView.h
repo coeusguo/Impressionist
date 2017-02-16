@@ -27,7 +27,8 @@ public:
 	
 	void draw();
 	void refresh();
-
+	void setCursor(const Point& p);
+	void drawCursor();
 	void resizeWindow(int width, int height);
 
 	ImpressionistDoc*	m_pDoc;
@@ -35,6 +36,13 @@ public:
 private:
 	int	m_nWindowWidth, 
 		m_nWindowHeight;
+
+	//store the original height and width of the loaded picture
+	int iniWidth;
+	int iniHeight;
+
+	Point cursor;
+
 
 };
 

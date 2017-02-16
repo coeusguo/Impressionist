@@ -9,7 +9,7 @@
 #include "impressionistUI.h"
 #include "paintview.h"
 #include "ImpBrush.h"
-
+#include <iostream>
 
 #define LEFT_MOUSE_DOWN		1
 #define LEFT_MOUSE_DRAG		2
@@ -171,6 +171,7 @@ int PaintView::handle(int event)
 			eventToDo=LEFT_MOUSE_DRAG;
 		isAnEvent=1;
 		redraw();
+		m_pDoc->m_pUI->passCursorPoint(coord);
 		break;
 	case FL_RELEASE:
 		coord.x = Fl::event_x();
@@ -185,7 +186,10 @@ int PaintView::handle(int event)
 	case FL_MOVE:
 		coord.x = Fl::event_x();
 		coord.y = Fl::event_y();
+		//if(coord.x<= m_nEndCol||coord.y>m_nStartRow)
+		m_pDoc->m_pUI->passCursorPoint(coord);
 		break;
+
 	default:
 		return 0;
 		break;
@@ -242,4 +246,24 @@ void PaintView::RestoreContent()
 				  m_pPaintBitstart);
 
 //	glDrawBuffer(GL_FRONT);
+}
+
+int PaintView::getStartRow()const {
+	return m_nStartRow;
+}
+
+int PaintView::getStartCol()const {
+	return m_nStartCol;
+}
+
+int PaintView::getEndRow()const {
+	return m_nEndRow;
+}
+
+int PaintView::getEndCol()const {
+	return m_nEndCol;
+}
+
+int PaintView::getDrawHeight()const {
+	return m_nDrawHeight;
 }

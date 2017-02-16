@@ -58,6 +58,7 @@ public:
 	int					getLineAngle();
 	double				getAlpha();
 	void				setSize(int size);
+	void				passCursorPoint(const Point& p);
 
 private:
 	ImpressionistDoc*	m_pDoc;		// pointer to document to communicate with the document

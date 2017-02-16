@@ -555,3 +555,9 @@ ImpressionistUI::ImpressionistUI() {
     m_brushDialog->end();	
 
 }
+
+
+void ImpressionistUI::passCursorPoint(const Point& p) {
+	m_origView->setCursor(p);
+	
+}

@@ -38,19 +38,44 @@ void CircleBrush::BrushMove(const Point source, const Point target)
 		return;
 	}
 
+	int x = target.x;
+	int y = target.y;
+
+	int startCol = dlg->m_paintView->getStartCol();
+	int startRow = dlg->m_paintView->getStartRow() + dlg->m_mainWindow->h() - dlg->m_paintView->getDrawHeight() - 25;
+	//int startRow = 0;
+	int endCol = dlg->m_paintView->getEndCol();
+	int endRow = startRow + dlg->m_paintView->getDrawHeight();
+
+	if (x < startCol) {
+		x = startCol;
+	}
+
+	if (x > endCol) {
+		x = endCol;
+	}
+
+	if (y < startRow) {
+		y = startRow;
+	}
+
+	if (y > endRow) {
+		y = endRow;
+	}
+
 	glBegin(GL_TRIANGLE_FAN);
 	SetColor(source);
-	glVertex2f((GLfloat)target.x, (GLfloat)target.y);
+	glVertex2f((GLfloat)x, (GLfloat)y);
 
-	float x = radius;
-	float y = 0;
+	float xx = radius;
+	float yy = 0;
 
 	float unitAngle = twoPi / triangleAmount;
-	glVertex2f(target.x + x, target.y + y);
+	glVertex2f(x + xx, y + yy);
 	for (int i = 1; i <= triangleAmount; i++) {
-		x = radius*cosf(i*unitAngle);
-		y = radius*sinf(i*unitAngle);
-		glVertex2f(target.x + x, target.y + y);
+		xx = radius*cosf(i*unitAngle);
+		yy = radius*sinf(i*unitAngle);
+		glVertex2f(x + xx, y + yy);
 	}
 
 	glEnd();

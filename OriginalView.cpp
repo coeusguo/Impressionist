@@ -7,6 +7,8 @@
 #include "impressionist.h"
 #include "impressionistDoc.h"
 #include "originalview.h"
+#include<iostream>
+
 
 #ifndef WIN32
 #define min(a, b)	( ( (a)<(b) ) ? (a) : (b) )
@@ -50,7 +52,7 @@ void OriginalView::draw()
 
 		m_nWindowWidth=w();
 		m_nWindowHeight=h();
-
+		
 		int drawWidth, drawHeight;
 		GLvoid* bitstart;
 
@@ -75,6 +77,8 @@ void OriginalView::draw()
 		glDrawBuffer( GL_BACK );
 		glDrawPixels( drawWidth, drawHeight, GL_RGB, GL_UNSIGNED_BYTE, bitstart );
 
+		if(cursor.x<= drawWidth && cursor.y<= drawHeight)
+		drawCursor();
 	}
 			
 	glFlush();
@@ -91,3 +95,17 @@ void OriginalView::resizeWindow(int	width,
 	resize(x(), y(), width, height);
 }
 
+void OriginalView::setCursor(const Point &p) {
+	cursor = p;
+	redraw();
+}
+
+void OriginalView::drawCursor() {
+	
+	glPointSize(5);
+	
+	glBegin(GL_POINTS);
+	glColor3ub(255, 0, 0);
+	glVertex2d(cursor.x, m_nWindowHeight - cursor.y);
+	glEnd();
+}
