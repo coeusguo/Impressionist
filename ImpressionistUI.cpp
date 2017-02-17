@@ -390,6 +390,18 @@ void ImpressionistUI::cb_ApplyColorScaling(Fl_Widget* o, void* v) {
 	}
 	pDoc->m_pUI->m_origView->refresh();
 }
+//------------------------------------------------
+// undo
+//------------------------------------------------
+void ImpressionistUI::cb_undo(Fl_Menu_* o, void* v) {
+	ImpressionistDoc *pDoc = whoami(o)->getDocument();
+	if (!pDoc->history.empty()) {
+		delete[]pDoc->m_ucPainting;
+		pDoc->m_ucPainting = pDoc->history.top();
+		pDoc->history.pop();
+		pDoc->m_pUI->m_paintView->refresh();
+	}
+}
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -484,6 +496,8 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 	
 	{ "&Edit",		0, 0, 0, FL_SUBMENU },
 		{ "&Colors",FL_ALT + 'o' ,(Fl_Callback *)ImpressionistUI::cb_colors },
+		{ "&Undo",FL_ALT + 'u' ,(Fl_Callback *)ImpressionistUI::cb_undo },
+
 		{ 0 },
 
 	{ "&Display",		0, 0, 0, FL_SUBMENU },
@@ -506,6 +520,8 @@ Fl_Menu_Item ImpressionistUI::brushTypeMenu[NUM_BRUSH_TYPE+1] = {
   {"Scattered Lines",	FL_ALT+'m', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_SCATTERED_LINES},
   {"Scattered Circles",	FL_ALT+'d', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_SCATTERED_CIRCLES},
   { "Gray",	FL_ALT + 'r', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_GRAY_POINTS },
+  { "Sharpen",	FL_ALT + 'n', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_SHARPEN_POINTS },
+  { "Blur",	FL_ALT + 'u', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_BLUR_POINTS },
   {0}
 };
 

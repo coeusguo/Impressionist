@@ -20,6 +20,8 @@
 #include "ScatterLine.h"
 #include "ScatterPoint.h"
 #include "GrayBrush.h"
+#include "SharpenBrush.h"
+#include "BlurBrush.h"
 #include <iostream>
 
 
@@ -55,6 +57,10 @@ ImpressionistDoc::ImpressionistDoc()
 		= new ScatterCircle( this, "Scattered Circles" );
 	ImpBrush::c_pBrushes[BRUSH_GRAY_POINTS]
 		= new GrayBrush(this, "Gray");
+	ImpBrush::c_pBrushes[BRUSH_SHARPEN_POINTS]
+		= new SharpenBrush(this, "Sharpen Points");
+	ImpBrush::c_pBrushes[BRUSH_BLUR_POINTS]
+		= new BlurBrush(this, "Blur Points");
 
 	// make one of the brushes current
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[0];
@@ -164,7 +170,11 @@ int ImpressionistDoc::loadImage(char *iname)
 	m_pUI->m_paintView->resizeWindow(width, height);	
 	m_pUI->m_paintView->refresh();
 
-
+	while (!history.empty()) {
+		delete[]history.top();
+		history.pop();
+	}
+	
 	return 1;
 }
 

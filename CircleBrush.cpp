@@ -19,7 +19,7 @@ CircleBrush::CircleBrush(ImpressionistDoc* pDoc, char* name) :
 void CircleBrush::BrushBegin(const Point source, const Point target)
 {
 	ImpressionistDoc* pDoc = GetDocument();
-
+	saveState();
 	BrushMove(source, target);
 }
 

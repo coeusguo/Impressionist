@@ -18,6 +18,7 @@ PointBrush::PointBrush( ImpressionistDoc* pDoc, char* name ) :
 
 void PointBrush::BrushBegin( const Point source, const Point target )
 {
+	saveState();
 	ImpressionistDoc* pDoc = GetDocument();
 	ImpressionistUI* dlg=pDoc->m_pUI;
 

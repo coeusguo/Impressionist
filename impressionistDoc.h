@@ -9,7 +9,8 @@
 
 #include "impressionist.h"
 #include "bitmap.h"
-
+#include <stack>
+using namespace std;
 class ImpressionistUI;
 
 //the type of the line brush direction control
@@ -34,7 +35,7 @@ public:
 	double	getAlpha();
 	void	setSize(int size);				// set the UI size
 	char*	getImageName();					// get the current image name
-	
+	stack<unsigned char*>	history;
 
 // Attributes
 public:

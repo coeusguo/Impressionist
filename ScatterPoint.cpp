@@ -21,6 +21,7 @@ ScatterPoint::ScatterPoint(ImpressionistDoc* pDoc, char* name) :
 
 void ScatterPoint::BrushBegin(const Point source, const Point target)
 {
+	saveState();
 	ImpressionistDoc* pDoc = GetDocument();
 	srand((unsigned int)time(0));
 	BrushMove(source, target);
