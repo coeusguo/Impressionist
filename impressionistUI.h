@@ -33,6 +33,15 @@ public:
 	PaintView*			m_paintView;
 	OriginalView*		m_origView;
 
+//for color dialog
+	Fl_Window*			m_colorDialog;
+	Fl_Slider*			m_RedColorSlider;
+	Fl_Slider*			m_GreenColorSlider;
+	Fl_Slider*			m_BlueColorSlider;
+	Fl_Button*          m_ApplyScalingButton;
+	float				m_nRedScale;
+	float				m_nGreenScale;
+	float				m_nBlueScale;
 // for brush dialog
 	Fl_Window*			m_brushDialog;
 	Fl_Choice*			m_BrushTypeChoice;
@@ -85,6 +94,7 @@ private:
 	static void	cb_exit(Fl_Menu_* o, void* v);
 	static void	cb_about(Fl_Menu_* o, void* v);
 	static void cb_SwapWindows(Fl_Menu_* o, void* v);
+	static void cb_colors(Fl_Menu_* o, void* v);
 
 	static void	cb_brushChoice(Fl_Widget* o, void* v);
 	static void cb_brushDirectionType(Fl_Widget* o, void* v);
@@ -93,6 +103,10 @@ private:
 	static void	cb_LineWidthSlides(Fl_Widget* o, void* v);
 	static void	cb_LineAngleSlides(Fl_Widget* o, void* v);
 	static void	cb_AlphaSlides(Fl_Widget* o, void* v);
+	static void	cb_RedSlides(Fl_Widget* o, void* v);
+	static void	cb_GreenSlides(Fl_Widget* o, void* v);
+	static void	cb_BlueSlides(Fl_Widget* o, void* v);
+	static void cb_ApplyColorScaling(Fl_Widget* o, void* v);
 	
 };
 

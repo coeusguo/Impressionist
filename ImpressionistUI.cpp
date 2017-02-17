@@ -329,11 +329,66 @@ void ImpressionistUI::cb_SwapWindows(Fl_Menu_* o, void* v) {
 	unsigned char*	tempdata;
 
 	if (pDoc->m_ucBitmap) delete[]pDoc->m_ucBitmap;
+	if (pDoc->m_ucBitmapOrigin) delete[]pDoc->m_ucBitmapOrigin;
+	
+	//used by independent RGB scalling
+	pDoc->m_ucBitmapOrigin = new unsigned char[pDoc->m_nWidth*pDoc->m_nHeight * 3];
+	memcpy(pDoc->m_ucBitmapOrigin, pDoc->m_ucPainting, pDoc->m_nWidth*pDoc->m_nHeight * 3);
+
+	//swap paintView to originView
 	pDoc->m_ucBitmap = pDoc->m_ucPainting;
+	//create a new paintView
 	pDoc->m_ucPainting = new unsigned char[pDoc->m_nWidth*pDoc->m_nHeight * 3];
 	memset(pDoc->m_ucPainting, 0, pDoc->m_nWidth*pDoc->m_nHeight * 3);
 	pDoc->m_pUI->m_paintView->refresh();
 
+}
+//-----------------------------------------------------------
+// Independent RGB color scalling
+//-----------------------------------------------------------
+void ImpressionistUI::cb_colors(Fl_Menu_* o, void* v) {
+	whoami(o)->m_colorDialog->show();
+}
+//-----------------------------------------------------------
+// Independent RGB color scalling for Red
+//-----------------------------------------------------------
+void ImpressionistUI::cb_RedSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_nRedScale = float(((Fl_Slider *)o)->value());
+}
+//-----------------------------------------------------------
+// Independent RGB color scalling for Green
+//-----------------------------------------------------------
+void ImpressionistUI::cb_GreenSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_nGreenScale = float(((Fl_Slider *)o)->value());
+}
+//-----------------------------------------------------------
+// Independent RGB color scalling for Blue
+//-----------------------------------------------------------
+void ImpressionistUI::cb_BlueSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_nBlueScale = float(((Fl_Slider *)o)->value());
+}
+
+void ImpressionistUI::cb_ApplyColorScaling(Fl_Widget* o, void* v) {
+	
+	ImpressionistDoc* pDoc = ((ImpressionistUI*)(o->user_data()))->m_pDoc;
+	if (pDoc->m_ucBitmap == NULL) {
+		printf("No image is loaded now");
+		return;
+	}
+	int width = pDoc->m_nWidth;
+	int height = pDoc->m_nHeight;
+	memcpy(pDoc->m_ucBitmap, pDoc->m_ucBitmapOrigin, width*height * 3);
+	unsigned char* image = pDoc->m_ucBitmap;
+	
+	for (int i = 0; i < width*height; i++) {
+		image[i * 3] *= pDoc->m_pUI->m_nRedScale;
+		image[i * 3 + 1] *= pDoc->m_pUI->m_nGreenScale;
+		image[i * 3 + 2] *= pDoc->m_pUI->m_nBlueScale;
+	}
+	pDoc->m_pUI->m_origView->refresh();
 }
 //---------------------------------- per instance functions --------------------------------------
 
@@ -426,9 +481,15 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 		
 		{ "&Quit",			FL_ALT + 'q', (Fl_Callback *)ImpressionistUI::cb_exit },
 		{ 0 },
+	
+	{ "&Edit",		0, 0, 0, FL_SUBMENU },
+		{ "&Colors",FL_ALT + 'o' ,(Fl_Callback *)ImpressionistUI::cb_colors },
+		{ 0 },
+
 	{ "&Display",		0, 0, 0, FL_SUBMENU },
 		{"&Swap Windows",FL_ALT + 'w' ,(Fl_Callback *)ImpressionistUI::cb_SwapWindows },
 		{ 0 },
+
 	{ "&Help",		0, 0, 0, FL_SUBMENU },
 		{ "&About",	FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_about },
 		{ 0 },
@@ -485,7 +546,59 @@ ImpressionistUI::ImpressionistUI() {
 		Fl_Group::current()->resizable(group);
     m_mainWindow->end();
 
+	//ini values
+	//used by color dialog definition
+	m_nRedScale = 1.00;
+	m_nGreenScale = 1.00;
+	m_nBlueScale = 1.00;
+	//color dialog definition
+	m_colorDialog = new Fl_Window(360, 100, "Color Dialog");
+		
+		//Red scale slider
+		m_AlphaSlider = new Fl_Value_Slider(10, 10, 300, 20, "Red");
+		m_AlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_AlphaSlider->type(FL_HOR_NICE_SLIDER);
+		m_AlphaSlider->labelfont(FL_COURIER);
+		m_AlphaSlider->labelsize(12);
+		m_AlphaSlider->minimum(0.00);
+		m_AlphaSlider->maximum(1);
+		m_AlphaSlider->step(0.01);
+		m_AlphaSlider->value(m_nRedScale);
+		m_AlphaSlider->align(FL_ALIGN_RIGHT);
+		m_AlphaSlider->callback(cb_RedSlides);
+
+		//green scale slider
+		m_AlphaSlider = new Fl_Value_Slider(10, 30, 300, 20, "Green");
+		m_AlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_AlphaSlider->type(FL_HOR_NICE_SLIDER);
+		m_AlphaSlider->labelfont(FL_COURIER);
+		m_AlphaSlider->labelsize(12);
+		m_AlphaSlider->minimum(0.00);
+		m_AlphaSlider->maximum(1);
+		m_AlphaSlider->step(0.01);
+		m_AlphaSlider->value(m_nGreenScale);
+		m_AlphaSlider->align(FL_ALIGN_RIGHT);
+		m_AlphaSlider->callback(cb_GreenSlides);
+
+		//blue scale slider
+		m_AlphaSlider = new Fl_Value_Slider(10, 50, 300, 20, "Blue");
+		m_AlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_AlphaSlider->type(FL_HOR_NICE_SLIDER);
+		m_AlphaSlider->labelfont(FL_COURIER);
+		m_AlphaSlider->labelsize(12);
+		m_AlphaSlider->minimum(0.00);
+		m_AlphaSlider->maximum(1);
+		m_AlphaSlider->step(0.01);
+		m_AlphaSlider->value(m_nBlueScale);
+		m_AlphaSlider->align(FL_ALIGN_RIGHT);
+		m_AlphaSlider->callback(cb_BlueSlides);
+
+		m_ApplyScalingButton = new Fl_Button(250, 70, 70, 25, "&Apply");
+		m_ApplyScalingButton->user_data((void*)(this));
+		m_ApplyScalingButton->callback(cb_ApplyColorScaling);
+	m_colorDialog->end();
 	// init values
+	// used by brush dialog definition
 
 	m_nSize = 10;
 	m_nLineWidth = 1;
