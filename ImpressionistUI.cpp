@@ -321,6 +321,20 @@ void ImpressionistUI::cb_AlphaSlides(Fl_Widget* o, void* v)
 {
 	((ImpressionistUI*)(o->user_data()))->m_nAlpha = float(((Fl_Slider *)o)->value());
 }
+//-----------------------------------------------------------
+// Swap paint window and original window
+//-----------------------------------------------------------
+void ImpressionistUI::cb_SwapWindows(Fl_Menu_* o, void* v) {
+	ImpressionistUI* pUI = whoami(o);
+	int x1 = pUI->m_origView->x();
+	int y1 = pUI->m_origView->y();
+
+	int x2 = pUI->m_paintView->x();
+	int y2 = pUI->m_paintView->y();
+
+	pUI->m_origView->position(x2, y2);
+	pUI->m_paintView->position(x1, y1);
+}
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -412,7 +426,9 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 		
 		{ "&Quit",			FL_ALT + 'q', (Fl_Callback *)ImpressionistUI::cb_exit },
 		{ 0 },
-
+	{ "&Display",		0, 0, 0, FL_SUBMENU },
+		{"&Swap Windows",FL_ALT + 'w' ,(Fl_Callback *)ImpressionistUI::cb_SwapWindows },
+		{ 0 },
 	{ "&Help",		0, 0, 0, FL_SUBMENU },
 		{ "&About",	FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_about },
 		{ 0 },
@@ -459,7 +475,7 @@ ImpressionistUI::ImpressionistUI() {
 			// install paint view window
 			m_paintView = new PaintView(300, 25, 300, 275, "This is the paint view");//0jon
 			m_paintView->box(FL_DOWN_FRAME);
-
+			
 			// install original view window
 			m_origView = new OriginalView(0, 25, 300, 275, "This is the orig view");//300jon
 			m_origView->box(FL_DOWN_FRAME);
