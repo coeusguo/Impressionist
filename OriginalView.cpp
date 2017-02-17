@@ -78,7 +78,7 @@ void OriginalView::draw()
 		glDrawPixels( drawWidth, drawHeight, GL_RGB, GL_UNSIGNED_BYTE, bitstart );
 
 		if(cursor.x<= drawWidth && cursor.y<= drawHeight&&cursor.x>=0&&cursor.y>=0)
-		drawCursor();
+			drawCursor();
 	}
 			
 	glFlush();

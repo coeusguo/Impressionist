@@ -325,15 +325,15 @@ void ImpressionistUI::cb_AlphaSlides(Fl_Widget* o, void* v)
 // Swap paint window and original window
 //-----------------------------------------------------------
 void ImpressionistUI::cb_SwapWindows(Fl_Menu_* o, void* v) {
-	ImpressionistUI* pUI = whoami(o);
-	int x1 = pUI->m_origView->x();
-	int y1 = pUI->m_origView->y();
+	ImpressionistDoc* pDoc = whoami(o)->getDocument();
+	unsigned char*	tempdata;
 
-	int x2 = pUI->m_paintView->x();
-	int y2 = pUI->m_paintView->y();
+	if (pDoc->m_ucBitmap) delete[]pDoc->m_ucBitmap;
+	pDoc->m_ucBitmap = pDoc->m_ucPainting;
+	pDoc->m_ucPainting = new unsigned char[pDoc->m_nWidth*pDoc->m_nHeight * 3];
+	memset(pDoc->m_ucPainting, 0, pDoc->m_nWidth*pDoc->m_nHeight * 3);
+	pDoc->m_pUI->m_paintView->refresh();
 
-	pUI->m_origView->position(x2, y2);
-	pUI->m_paintView->position(x1, y1);
 }
 //---------------------------------- per instance functions --------------------------------------
 
