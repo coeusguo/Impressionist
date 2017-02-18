@@ -338,7 +338,7 @@ void ImpressionistUI::cb_SwapWindows(Fl_Menu_* o, void* v) {
 	ImpressionistDoc* pDoc = whoami(o)->getDocument();
 	unsigned char*	tempdata;
 
-	if (pDoc->m_ucBitmap) delete[]pDoc->m_ucBitmap;
+	tempdata = pDoc->m_ucBitmap;
 	if (pDoc->m_ucBitmapOrigin) delete[]pDoc->m_ucBitmapOrigin;
 	
 	//used by independent RGB scalling
@@ -348,9 +348,9 @@ void ImpressionistUI::cb_SwapWindows(Fl_Menu_* o, void* v) {
 	//swap paintView to originView
 	pDoc->m_ucBitmap = pDoc->m_ucPainting;
 	//create a new paintView
-	pDoc->m_ucPainting = new unsigned char[pDoc->m_nWidth*pDoc->m_nHeight * 3];
-	memset(pDoc->m_ucPainting, 0, pDoc->m_nWidth*pDoc->m_nHeight * 3);
+	pDoc->m_ucPainting = tempdata;
 	pDoc->m_pUI->m_paintView->refresh();
+	pDoc->m_pUI->m_origView->refresh();
 
 }
 //-----------------------------------------------------------
