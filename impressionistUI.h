@@ -98,6 +98,7 @@ private:
 	static void cb_undo(Fl_Menu_* o, void* v);
 	static void cb_dissolve_image(Fl_Menu_* o,void* v);
 	static void cb_mural_image(Fl_Menu_* o, void* v);
+	static void cb_load_alpha_map(Fl_Menu_* o, void* v);
 
 	static void	cb_brushChoice(Fl_Widget* o, void* v);
 	static void cb_brushDirectionType(Fl_Widget* o, void* v);

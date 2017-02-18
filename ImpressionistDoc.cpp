@@ -22,6 +22,7 @@
 #include "GrayBrush.h"
 #include "SharpenBrush.h"
 #include "BlurBrush.h"
+#include "AlphaMapBrush.h"
 #include <iostream>
 
 
@@ -37,6 +38,7 @@ ImpressionistDoc::ImpressionistDoc()
 	m_ucPainting	= NULL;
 	m_ucBitmapOrigin = NULL;
 	m_ucDissolve = NULL;
+	m_ucAlphamap = NULL;
 	// create one instance of each brush
 	ImpBrush::c_nBrushCount	= NUM_BRUSH_TYPE;
 	ImpBrush::c_pBrushes	= new ImpBrush* [ImpBrush::c_nBrushCount];
@@ -61,6 +63,8 @@ ImpressionistDoc::ImpressionistDoc()
 		= new SharpenBrush(this, "Sharpen Points");
 	ImpBrush::c_pBrushes[BRUSH_BLUR_POINTS]
 		= new BlurBrush(this, "Blur Points");
+	ImpBrush::c_pBrushes[BRUSH_ALPHA_MAP]
+		= new AlphaMapBrush(this,"Alpha Map");
 
 	// make one of the brushes current
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[0];
@@ -270,6 +274,33 @@ int ImpressionistDoc::muralImage(char *iname) {
 	m_pUI->m_origView->refresh();
 
 	
+
+	return 1;
+}
+
+int ImpressionistDoc::alphaMapBrush(char *iname) {
+	// try to open the image to read
+	unsigned char*	data;
+	int				width,
+					height;
+
+
+	if ((data = readBMP(iname, width, height)) == NULL)
+	{
+		fl_alert("Can't load bitmap file");
+		return 0;
+	}
+	m_nAlphaMapHeight = height;
+	m_nAlphaMapWidth = width;
+	// release old storage
+	if (m_ucAlphamap)delete[] m_ucAlphamap;
+
+
+	m_ucAlphamap = new unsigned char[width*height];
+	for (int i = 0; i < width*height; i++) {
+		m_ucAlphamap[i] = ((int)data[i * 3] + (int)data[i * 3 + 1] + (int)data[i * 3 + 2]) / 3;
+	}
+
 
 	return 1;
 }

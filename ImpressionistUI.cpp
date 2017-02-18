@@ -266,9 +266,10 @@ void ImpressionistUI::cb_brushChoice(Fl_Widget* o, void* v)
 		pUI->m_LineAngleSlider->activate();
 	}
 
-	if (type == BRUSH_SHARPEN_POINTS || type == BRUSH_BLUR_POINTS) {
+	if (type == BRUSH_SHARPEN_POINTS || type == BRUSH_BLUR_POINTS||type ==BRUSH_ALPHA_MAP) {
 		pUI->m_BrushSizeSlider->deactivate();
-		pUI->m_AlphaSlider->deactivate();
+		if(type !=BRUSH_ALPHA_MAP)
+			pUI->m_AlphaSlider->deactivate();
 	}
 	else {
 		pUI->m_BrushSizeSlider->activate();
@@ -427,6 +428,16 @@ void ImpressionistUI::cb_mural_image(Fl_Menu_* o, void* v) {
 		pDoc->muralImage(newfile);
 	}
 }
+
+void ImpressionistUI::cb_load_alpha_map(Fl_Menu_* o, void* v) {
+	ImpressionistDoc *pDoc = whoami(o)->getDocument();
+	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
+	if (newfile != NULL) {
+		pDoc->alphaMapBrush(newfile);
+	}
+
+
+}
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -515,6 +526,7 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 		{ "&Save Image...",	FL_ALT + 's', (Fl_Callback *)ImpressionistUI::cb_save_image },
 		{ "&Dissolve Image...",	FL_ALT + 'd', (Fl_Callback *)ImpressionistUI::cb_dissolve_image },
 		{ "&New Mural Image...",	FL_ALT + 'd', (Fl_Callback *)ImpressionistUI::cb_mural_image },
+		{ "&Load Alpha-mapped Brush",	FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_load_alpha_map },
 		{ "&Brushes...",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes }, 
 		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0, FL_MENU_DIVIDER },
 		
@@ -549,6 +561,7 @@ Fl_Menu_Item ImpressionistUI::brushTypeMenu[NUM_BRUSH_TYPE+1] = {
   { "Gray",	FL_ALT + 'r', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_GRAY_POINTS },
   { "Sharpen",	FL_ALT + 'n', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_SHARPEN_POINTS },
   { "Blur",	FL_ALT + 'u', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_BLUR_POINTS },
+  { "Alpha Map",	FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_ALPHA_MAP },
   {0}
 };
 

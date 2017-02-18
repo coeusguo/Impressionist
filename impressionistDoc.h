@@ -26,6 +26,7 @@ public:
 	int		saveImage(char *iname);			// called by the UI to save image
 	int		dissolveImage(char *iname);		// called by the UI to dissolve image
 	int		muralImage(char *iname);		// mural image
+	int		alphaMapBrush(char *iname);
 
 	int     clearCanvas();                  // called by the UI to clear the drawing canvas
 	void	setBrushType(int type);			// called by the UI to set the brushType
@@ -46,12 +47,17 @@ public:
 	// Dimensions of the paint window.
 	int				m_nPaintWidth, 
 					m_nPaintHeight;	
+	// Dimensions of the alpha map
+	int				m_nAlphaMapWidth,
+					m_nAlphaMapHeight;
 	// Bitmaps for original image and painting.
 	unsigned char*	m_ucBitmap;
 	unsigned char*	m_ucPainting;
 	unsigned char*	m_ucBitmapOrigin;
 	unsigned char*  m_ucDissolve;
-	unsigned char*  m_ucBackupImage;//used in dim function
+	//unsigned char*  m_ucBackupImage;//used in dim function
+	unsigned char*	m_ucAlphamap;
+
 	// The current active brush.
 	ImpBrush*			m_pCurrentBrush;	
 	
