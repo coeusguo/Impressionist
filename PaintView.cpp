@@ -79,7 +79,11 @@ void PaintView::draw()
 	if ( startrow < 0 ) startrow = 0;
 
 	m_pPaintBitstart = m_pDoc->m_ucPainting + 
-		3 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
+		3 * ((m_pDoc->m_nPaintWidth * (startrow)) + scrollpos.x);
+
+	//test
+	m_pPaintBitstart1 = m_pDoc->m_ucBitmap +
+		3 * ((m_pDoc->m_nPaintWidth * (startrow)) + scrollpos.x);
 
 	m_nDrawWidth	= drawWidth;
 	m_nDrawHeight	= drawHeight;
@@ -216,6 +220,7 @@ void PaintView::SaveCurrentContent()
 	// Tell openGL to read from the front buffer when capturing
 	// out paint strokes
 	glReadBuffer(GL_FRONT);
+	//glReadBuffer(GL_FRONT_AND_BACK);
 
 	glPixelStorei( GL_PACK_ALIGNMENT, 1 );
 	glPixelStorei( GL_PACK_ROW_LENGTH, m_pDoc->m_nPaintWidth );
@@ -227,6 +232,16 @@ void PaintView::SaveCurrentContent()
 				  GL_RGB, 
 				  GL_UNSIGNED_BYTE, 
 				  m_pPaintBitstart );
+
+	/*
+	glReadPixels(0,
+		m_nWindowHeight - m_nDrawHeight,
+		m_nDrawWidth,
+		m_nDrawHeight,
+		GL_RGB,
+		GL_UNSIGNED_BYTE,
+		m_pPaintBitstart1);
+		*/
 }
 
 
@@ -245,7 +260,15 @@ void PaintView::RestoreContent()
 				  GL_UNSIGNED_BYTE, 
 				  m_pPaintBitstart);
 
-//	glDrawBuffer(GL_FRONT);
+	/*test
+	glDrawPixels(m_nDrawWidth,
+		m_nDrawHeight,
+		GL_RGB,
+		GL_UNSIGNED_BYTE,
+		m_pPaintBitstart1);
+		*/
+
+	//glDrawBuffer(GL_FRONT);
 }
 
 int PaintView::getStartRow()const {

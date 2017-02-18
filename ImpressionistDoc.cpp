@@ -36,7 +36,7 @@ ImpressionistDoc::ImpressionistDoc()
 	m_ucBitmap		= NULL;
 	m_ucPainting	= NULL;
 	m_ucBitmapOrigin = NULL;
-
+	m_ucDissolve = NULL;
 	// create one instance of each brush
 	ImpBrush::c_nBrushCount	= NUM_BRUSH_TYPE;
 	ImpBrush::c_pBrushes	= new ImpBrush* [ImpBrush::c_nBrushCount];
@@ -224,6 +224,52 @@ int	ImpressionistDoc::dissolveImage(char *iname) {
 	// refresh paint view as well
 	m_pUI->m_paintView->resizeWindow(width, height);
 	m_pUI->m_paintView->refresh();
+
+	return 1;
+}
+//----------------------------------------------------------------
+// Add a "mural" effect 
+// This is called by the UI when the New Mural Image menu button is 
+// pressed.
+//----------------------------------------------------------------
+int ImpressionistDoc::muralImage(char *iname) {
+	// try to open the image to read
+	unsigned char*	data;
+	int				width,
+		height;
+
+	if (!m_ucBitmap) {
+		fl_alert("You must load a bitmap to canvas first!");
+		return 0;
+	}
+
+	if ((data = readBMP(iname, width, height)) == NULL)
+	{
+		fl_alert("Can't load bitmap file");
+		return 0;
+	}
+
+	if (width != m_nWidth || height != m_nHeight) {
+		fl_alert("The size are different");
+		return 0;
+	}
+
+	
+
+	// release old storage
+	if (m_ucBitmapOrigin)delete[] m_ucBitmapOrigin;
+	if (m_ucBitmap)delete[] m_ucBitmap;
+	
+	m_ucBitmap = data;
+
+	m_ucBitmapOrigin = new unsigned char[width*height * 3];
+	memcpy(m_ucBitmapOrigin, m_ucBitmap, width*height * 3);
+
+	// display it on origView
+	m_pUI->m_origView->resizeWindow(width, height);
+	m_pUI->m_origView->refresh();
+
+	
 
 	return 1;
 }

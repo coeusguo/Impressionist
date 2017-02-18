@@ -29,7 +29,7 @@ public:
 	// The FLTK widgets
 	Fl_Window*			m_mainWindow;
 	Fl_Menu_Bar*		m_menubar;
-								
+	
 	PaintView*			m_paintView;
 	OriginalView*		m_origView;
 
@@ -97,6 +97,7 @@ private:
 	static void cb_colors(Fl_Menu_* o, void* v);
 	static void cb_undo(Fl_Menu_* o, void* v);
 	static void cb_dissolve_image(Fl_Menu_* o,void* v);
+	static void cb_mural_image(Fl_Menu_* o, void* v);
 
 	static void	cb_brushChoice(Fl_Widget* o, void* v);
 	static void cb_brushDirectionType(Fl_Widget* o, void* v);

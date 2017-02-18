@@ -265,6 +265,15 @@ void ImpressionistUI::cb_brushChoice(Fl_Widget* o, void* v)
 		pUI->m_LineWidthSlider->activate();
 		pUI->m_LineAngleSlider->activate();
 	}
+
+	if (type == BRUSH_SHARPEN_POINTS || type == BRUSH_BLUR_POINTS) {
+		pUI->m_BrushSizeSlider->deactivate();
+		pUI->m_AlphaSlider->deactivate();
+	}
+	else {
+		pUI->m_BrushSizeSlider->activate();
+		pUI->m_AlphaSlider->activate();
+	}
 }
 
 void ImpressionistUI::cb_brushDirectionType(Fl_Widget* o, void* v) {
@@ -410,6 +419,14 @@ void ImpressionistUI::cb_dissolve_image(Fl_Menu_* o, void* v) {
 		pDoc->dissolveImage(newfile);
 	}
 }
+
+void ImpressionistUI::cb_mural_image(Fl_Menu_* o, void* v) {
+	ImpressionistDoc *pDoc = whoami(o)->getDocument();
+	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
+	if (newfile != NULL) {
+		pDoc->muralImage(newfile);
+	}
+}
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -497,6 +514,7 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 		{ "&Load Image...",	FL_ALT + 'l', (Fl_Callback *)ImpressionistUI::cb_load_image },
 		{ "&Save Image...",	FL_ALT + 's', (Fl_Callback *)ImpressionistUI::cb_save_image },
 		{ "&Dissolve Image...",	FL_ALT + 'd', (Fl_Callback *)ImpressionistUI::cb_dissolve_image },
+		{ "&New Mural Image...",	FL_ALT + 'd', (Fl_Callback *)ImpressionistUI::cb_mural_image },
 		{ "&Brushes...",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes }, 
 		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0, FL_MENU_DIVIDER },
 		
@@ -561,6 +579,7 @@ ImpressionistUI::ImpressionistUI() {
 			// install paint view window
 			m_paintView = new PaintView(300, 25, 300, 275, "This is the paint view");//0jon
 			m_paintView->box(FL_DOWN_FRAME);
+			
 			
 			// install original view window
 			m_origView = new OriginalView(0, 25, 300, 275, "This is the orig view");//300jon

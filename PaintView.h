@@ -55,6 +55,9 @@ private:
 			m_nWindowWidth, 
 			m_nWindowHeight;
 
+	//test
+	GLvoid* m_pPaintBitstart1;
+
 };
 
 #endif
