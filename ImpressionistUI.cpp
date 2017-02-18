@@ -402,6 +402,14 @@ void ImpressionistUI::cb_undo(Fl_Menu_* o, void* v) {
 		pDoc->m_pUI->m_paintView->refresh();
 	}
 }
+
+void ImpressionistUI::cb_dissolve_image(Fl_Menu_* o, void* v) {
+	ImpressionistDoc *pDoc = whoami(o)->getDocument();
+	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
+	if (newfile != NULL) {
+		pDoc->dissolveImage(newfile);
+	}
+}
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -488,6 +496,7 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
 		{ "&Load Image...",	FL_ALT + 'l', (Fl_Callback *)ImpressionistUI::cb_load_image },
 		{ "&Save Image...",	FL_ALT + 's', (Fl_Callback *)ImpressionistUI::cb_save_image },
+		{ "&Dissolve Image...",	FL_ALT + 'd', (Fl_Callback *)ImpressionistUI::cb_dissolve_image },
 		{ "&Brushes...",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes }, 
 		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0, FL_MENU_DIVIDER },
 		

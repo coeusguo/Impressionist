@@ -177,8 +177,56 @@ int ImpressionistDoc::loadImage(char *iname)
 	
 	return 1;
 }
+//---------------------------------------------------------
+// Load the specified image and dissolve with previously loaded picture
+// This is called by the UI when the load image button is 
+// pressed.
+//---------------------------------------------------------
+int	ImpressionistDoc::dissolveImage(char *iname) {
+	// try to open the image to read
+	unsigned char*	data;
+	int				width,
+					height;
 
+	if (!m_ucBitmap) {
+		fl_alert("You must load a bitmap to canvas first!");
+		return 0;
+	}
 
+	if ((data = readBMP(iname, width, height)) == NULL)
+	{
+		fl_alert("Can't load bitmap file");
+		return 0;
+	}
+
+	if (width != m_nWidth || height != m_nHeight) {
+		fl_alert("The size are different");
+		return 0;
+	}
+
+	m_ucDissolve = data;
+
+	// release old storage
+	if (m_ucBitmapOrigin)delete[] m_ucBitmapOrigin;
+
+	float alpha = 0.5;
+
+	for (int i = 0; i < width*height * 3; i++)
+		m_ucBitmap[i] = m_ucBitmap[i] * (1 - alpha * 1) + m_ucDissolve[i]*alpha * 1;
+	
+	m_ucBitmapOrigin = new unsigned char[width*height * 3];
+	memcpy(m_ucBitmapOrigin, m_ucBitmap, width*height * 3);
+
+	// display it on origView
+	m_pUI->m_origView->resizeWindow(width, height);
+	m_pUI->m_origView->refresh();
+
+	// refresh paint view as well
+	m_pUI->m_paintView->resizeWindow(width, height);
+	m_pUI->m_paintView->refresh();
+
+	return 1;
+}
 //----------------------------------------------------------------
 // Save the specified image
 // This is called by the UI when the save image menu button is 

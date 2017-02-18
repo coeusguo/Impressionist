@@ -96,6 +96,7 @@ private:
 	static void cb_SwapWindows(Fl_Menu_* o, void* v);
 	static void cb_colors(Fl_Menu_* o, void* v);
 	static void cb_undo(Fl_Menu_* o, void* v);
+	static void cb_dissolve_image(Fl_Menu_* o,void* v);
 
 	static void	cb_brushChoice(Fl_Widget* o, void* v);
 	static void cb_brushDirectionType(Fl_Widget* o, void* v);
