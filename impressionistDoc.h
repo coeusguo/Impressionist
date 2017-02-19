@@ -36,6 +36,7 @@ public:
 	int		getLineAngle();
 	double	getAlpha();
 	void	setSize(int size);				// set the UI size
+	void	setLineAngle(int lineAngle);	// set the UI line angle
 	char*	getImageName();					// get the current image name
 	stack<unsigned char*>	history;
 

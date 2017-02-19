@@ -6,11 +6,13 @@
 
 #ifndef PAINTVIEW_H
 #define PAINTVIEW_H
+#define _USE_MATH_DEFINES
 
 #include <FL/Fl.H>
 #include <FL/Fl_Gl_Window.H>
 #include <FL/gl.h>
 #include <GL/glu.h>
+#include <math.h>
 #include <stdlib.h>
 
 class ImpressionistDoc;
@@ -55,7 +57,7 @@ private:
 			m_nWindowWidth, 
 			m_nWindowHeight;
 
-
+	Point	m_pStartingPoint;
 
 };
 

@@ -67,6 +67,7 @@ public:
 	int					getLineAngle();
 	double				getAlpha();
 	void				setSize(int size);
+	void				setLineAngle(int lineAngle);
 	void				passCursorPoint(const Point& p);
 
 private:
