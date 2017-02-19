@@ -124,13 +124,22 @@ void PaintView::draw()
 			RestoreContent();
 			break;
 		case RIGHT_MOUSE_DOWN:
-
+			m_pStartingPoint = target;
 			break;
 		case RIGHT_MOUSE_DRAG:
+			RestoreContent();
 
+			// Draw a red line
+			glBegin(GL_LINES);
+			glColor3ub(255, 0, 0);
+			glVertex2d(m_pStartingPoint.x, m_pStartingPoint.y);
+			glVertex2d(target.x, target.y);
+			glEnd();
 			break;
 		case RIGHT_MOUSE_UP:
+			RestoreContent();
 
+			m_pUI->setLineAngle((int)((atan2((double)target.y - m_pStartingPoint.y, (double)target.x - m_pStartingPoint.x) * 180) / M_PI));
 			break;
 
 		default:

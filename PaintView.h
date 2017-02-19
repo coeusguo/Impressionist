@@ -6,11 +6,13 @@
 
 #ifndef PAINTVIEW_H
 #define PAINTVIEW_H
+#define _USE_MATH_DEFINES
 
 #include <FL/Fl.H>
 #include <FL/Fl_Gl_Window.H>
 #include <FL/gl.h>
 #include <GL/glu.h>
+#include <math.h>
 #include <stdlib.h>
 
 class ImpressionistDoc;
@@ -43,6 +45,7 @@ public:
 
 
 	ImpressionistDoc *m_pDoc;
+	ImpressionistUI*	m_pUI;
 
 private:
 	GLvoid* m_pPaintBitstart;
@@ -54,6 +57,8 @@ private:
 			m_nEndCol,
 			m_nWindowWidth, 
 			m_nWindowHeight;
+
+	Point	m_pStartingPoint;
 
 	//test
 	GLvoid* m_pPaintBitstart1;
