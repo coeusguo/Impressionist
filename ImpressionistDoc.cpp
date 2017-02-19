@@ -158,8 +158,9 @@ int ImpressionistDoc::loadImage(char *iname)
 	m_ucBitmap		= data;
 	
 	// allocate space for draw view
-	m_ucPainting	= new unsigned char [width*height*3];
-	memset(m_ucPainting, 0, width*height*3);
+	m_ucPainting	= new unsigned char [width*height*4];
+	memset(m_ucPainting, 0, width*height*4);
+	
 
 	m_pUI->m_mainWindow->resize(m_pUI->m_mainWindow->x(), 
 								m_pUI->m_mainWindow->y(), 
@@ -311,8 +312,14 @@ int ImpressionistDoc::alphaMapBrush(char *iname) {
 //----------------------------------------------------------------
 int ImpressionistDoc::saveImage(char *iname) 
 {
+	unsigned char* data = new unsigned char[m_nPaintHeight*m_nPaintWidth * 3];
+	for (int i = 0; i < m_nHeight*m_nWidth; i++) {
+		data[i * 3] = m_ucPainting[4 * i];
+		data[i * 3 + 1] = m_ucPainting[4 * i + 1];
+		data[i * 3 + 2] = m_ucPainting[4 * i + 2];
+	}
 
-	writeBMP(iname, m_nPaintWidth, m_nPaintHeight, m_ucPainting);
+	writeBMP(iname, m_nPaintWidth, m_nPaintHeight, data);
 
 	return 1;
 }
@@ -331,8 +338,8 @@ int ImpressionistDoc::clearCanvas()
 		delete [] m_ucPainting;
 
 		// allocate space for draw view
-		m_ucPainting	= new unsigned char [m_nPaintWidth*m_nPaintHeight*3];
-		memset(m_ucPainting, 0, m_nPaintWidth*m_nPaintHeight*3);
+		m_ucPainting	= new unsigned char [m_nPaintWidth*m_nPaintHeight*4];
+		memset(m_ucPainting, 0, m_nPaintWidth*m_nPaintHeight*4);
 
 		// refresh paint view as well	
 		m_pUI->m_paintView->refresh();

@@ -60,8 +60,8 @@ void PaintView::draw()
 
 		glClear( GL_COLOR_BUFFER_BIT );
 
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glEnable(GL_BLEND);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
 	Point scrollpos;// = GetScrollPosition();
@@ -79,11 +79,9 @@ void PaintView::draw()
 	if ( startrow < 0 ) startrow = 0;
 
 	m_pPaintBitstart = m_pDoc->m_ucPainting + 
-		3 * ((m_pDoc->m_nPaintWidth * (startrow)) + scrollpos.x);
+		4 * ((m_pDoc->m_nPaintWidth * (startrow)) + scrollpos.x);
 
-	//test
-	m_pPaintBitstart1 = m_pDoc->m_ucBitmap +
-		3 * ((m_pDoc->m_nPaintWidth * (startrow)) + scrollpos.x);
+	
 
 	m_nDrawWidth	= drawWidth;
 	m_nDrawHeight	= drawHeight;
@@ -98,6 +96,21 @@ void PaintView::draw()
 		RestoreContent();
 
 	}
+
+	/*
+	GLvoid* m_pOriginBitstart = m_pDoc->m_ucBitmap +
+		3 * ((m_pDoc->m_nPaintWidth * (startrow)) + scrollpos.x);
+	glRasterPos2i(0, m_nWindowHeight - drawHeight);
+	glRasterPos2i(0, m_nWindowHeight - m_nDrawHeight);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, m_pDoc->m_nPaintWidth);
+	glDrawPixels(m_nDrawWidth,
+		m_nDrawHeight,
+		GL_RGB,
+		GL_UNSIGNED_BYTE,
+		m_pOriginBitstart);
+
+	*/
 
 	if ( m_pDoc->m_ucPainting && isAnEvent) 
 	{
@@ -229,9 +242,16 @@ void PaintView::SaveCurrentContent()
 				  m_nWindowHeight - m_nDrawHeight, 
 				  m_nDrawWidth, 
 				  m_nDrawHeight, 
-				  GL_RGB, 
+				  GL_RGBA, 
 				  GL_UNSIGNED_BYTE, 
 				  m_pPaintBitstart );
+
+	
+	if (m_pDoc->m_nWidth > 0 && m_pDoc->m_nHeight > 0)
+	for (int i = 0; i < m_pDoc->m_nWidth * m_pDoc->m_nHeight; ++i)
+	{
+		((GLubyte*)m_pDoc->m_ucPainting)[i * 4 + 3] = 255;
+	}
 
 	/*
 	glReadPixels(0,
@@ -256,7 +276,7 @@ void PaintView::RestoreContent()
 	glPixelStorei( GL_UNPACK_ROW_LENGTH, m_pDoc->m_nPaintWidth );
 	glDrawPixels( m_nDrawWidth, 
 				  m_nDrawHeight, 
-				  GL_RGB, 
+				  GL_RGBA, 
 				  GL_UNSIGNED_BYTE, 
 				  m_pPaintBitstart);
 

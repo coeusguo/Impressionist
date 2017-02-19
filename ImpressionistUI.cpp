@@ -341,14 +341,29 @@ void ImpressionistUI::cb_SwapWindows(Fl_Menu_* o, void* v) {
 	tempdata = pDoc->m_ucBitmap;
 	if (pDoc->m_ucBitmapOrigin) delete[]pDoc->m_ucBitmapOrigin;
 	
+	//format transform
+	unsigned char* data = new unsigned char[pDoc->m_nWidth*pDoc->m_nHeight * 3];
+	for (int i = 0; i < pDoc->m_nPaintHeight*pDoc->m_nPaintWidth; i++) {
+		data[i * 3] = pDoc->m_ucPainting[4 * i];
+		data[i * 3 + 1] = pDoc->m_ucPainting[4 * i + 1];
+		data[i * 3 + 2] = pDoc->m_ucPainting[4 * i + 2];
+	}
+
 	//used by independent RGB scalling
 	pDoc->m_ucBitmapOrigin = new unsigned char[pDoc->m_nWidth*pDoc->m_nHeight * 3];
-	memcpy(pDoc->m_ucBitmapOrigin, pDoc->m_ucPainting, pDoc->m_nWidth*pDoc->m_nHeight * 3);
+	memcpy(pDoc->m_ucBitmapOrigin, data, pDoc->m_nWidth*pDoc->m_nHeight * 3);
 
 	//swap paintView to originView
-	pDoc->m_ucBitmap = pDoc->m_ucPainting;
+	pDoc->m_ucBitmap = data;
 	//create a new paintView
-	pDoc->m_ucPainting = tempdata;
+	if (pDoc->m_ucPainting)delete[]pDoc->m_ucPainting;
+	for (int i = 0; i < pDoc->m_nPaintHeight*pDoc->m_nPaintWidth; i++) {
+		pDoc->m_ucPainting[4 * i] = tempdata[3 * i];
+		pDoc->m_ucPainting[4 * i + 1] = tempdata[3 * i + 1];
+		pDoc->m_ucPainting[4 * i + 2] = tempdata[3 * i + 2];
+		pDoc->m_ucPainting[4 * i + 3] = 255;
+	}
+	delete[]tempdata;
 	pDoc->m_pUI->m_paintView->refresh();
 	pDoc->m_pUI->m_origView->refresh();
 
