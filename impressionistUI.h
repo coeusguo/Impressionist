@@ -42,6 +42,12 @@ public:
 	float				m_nRedScale;
 	float				m_nGreenScale;
 	float				m_nBlueScale;
+// for dimmed view dialog
+	Fl_Window*			m_dimDialog;
+	Fl_Slider*			m_dimAlphaSlider;
+	Fl_Button*			m_dimButton;
+	float				m_nDimAlpha;
+	bool				m_nShowDimImage;
 // for brush dialog
 	Fl_Window*			m_brushDialog;
 	Fl_Choice*			m_BrushTypeChoice;
@@ -99,6 +105,7 @@ private:
 	static void cb_dissolve_image(Fl_Menu_* o,void* v);
 	static void cb_mural_image(Fl_Menu_* o, void* v);
 	static void cb_load_alpha_map(Fl_Menu_* o, void* v);
+	static void cb_ShowDimDialog(Fl_Menu_* o, void* v);
 
 	static void	cb_brushChoice(Fl_Widget* o, void* v);
 	static void cb_brushDirectionType(Fl_Widget* o, void* v);
@@ -111,6 +118,8 @@ private:
 	static void	cb_GreenSlides(Fl_Widget* o, void* v);
 	static void	cb_BlueSlides(Fl_Widget* o, void* v);
 	static void cb_ApplyColorScaling(Fl_Widget* o, void* v);
+	static void cb_dimAlphaSlides(Fl_Widget* o, void* v);
+	static void cb_dim_button(Fl_Widget* o, void* v);
 	
 };
 

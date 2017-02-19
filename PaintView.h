@@ -46,6 +46,7 @@ public:
 
 private:
 	GLvoid* m_pPaintBitstart;
+	GLvoid* m_pBackupStart;
 	int		m_nDrawWidth,
 			m_nDrawHeight,
 			m_nStartRow, 
@@ -54,6 +55,7 @@ private:
 			m_nEndCol,
 			m_nWindowWidth, 
 			m_nWindowHeight;
+			
 
 
 

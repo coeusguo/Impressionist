@@ -427,7 +427,9 @@ void ImpressionistUI::cb_undo(Fl_Menu_* o, void* v) {
 		pDoc->m_pUI->m_paintView->refresh();
 	}
 }
-
+//------------------------------------------------
+// load dissolve image
+//------------------------------------------------
 void ImpressionistUI::cb_dissolve_image(Fl_Menu_* o, void* v) {
 	ImpressionistDoc *pDoc = whoami(o)->getDocument();
 	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
@@ -435,7 +437,9 @@ void ImpressionistUI::cb_dissolve_image(Fl_Menu_* o, void* v) {
 		pDoc->dissolveImage(newfile);
 	}
 }
-
+//------------------------------------------------
+// load mural image
+//------------------------------------------------
 void ImpressionistUI::cb_mural_image(Fl_Menu_* o, void* v) {
 	ImpressionistDoc *pDoc = whoami(o)->getDocument();
 	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
@@ -443,7 +447,9 @@ void ImpressionistUI::cb_mural_image(Fl_Menu_* o, void* v) {
 		pDoc->muralImage(newfile);
 	}
 }
-
+//------------------------------------------------
+// load a image for alpha map brush
+//------------------------------------------------
 void ImpressionistUI::cb_load_alpha_map(Fl_Menu_* o, void* v) {
 	ImpressionistDoc *pDoc = whoami(o)->getDocument();
 	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
@@ -452,6 +458,22 @@ void ImpressionistUI::cb_load_alpha_map(Fl_Menu_* o, void* v) {
 	}
 
 
+}
+//------------------------------------------------
+// dimmed view dialog
+//------------------------------------------------
+void ImpressionistUI::cb_ShowDimDialog(Fl_Menu_* o, void* v) {
+	whoami(o)->m_dimDialog->show();
+}
+void ImpressionistUI::cb_dimAlphaSlides(Fl_Widget* o, void* v) {
+	ImpressionistUI* pUI = ((ImpressionistUI*)(o->user_data()));
+	pUI->m_nDimAlpha = float(((Fl_Slider *)o)->value());
+	pUI->m_paintView->refresh();
+}
+void ImpressionistUI::cb_dim_button(Fl_Widget* o, void* v) {
+	ImpressionistUI* pUI = ((ImpressionistUI*)(o->user_data()));
+	pUI->m_nShowDimImage = !pUI->m_nShowDimImage;
+	pUI->m_paintView->refresh();
 }
 //---------------------------------- per instance functions --------------------------------------
 
@@ -540,22 +562,22 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 		{ "&Load Image...",	FL_ALT + 'l', (Fl_Callback *)ImpressionistUI::cb_load_image },
 		{ "&Save Image...",	FL_ALT + 's', (Fl_Callback *)ImpressionistUI::cb_save_image },
 		{ "&Dissolve Image...",	FL_ALT + 'd', (Fl_Callback *)ImpressionistUI::cb_dissolve_image },
-		{ "&New Mural Image...",	FL_ALT + 'd', (Fl_Callback *)ImpressionistUI::cb_mural_image },
+		{ "&New Mural Image...",	FL_ALT + 'm', (Fl_Callback *)ImpressionistUI::cb_mural_image },
 		{ "&Load Alpha-mapped Brush",	FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_load_alpha_map },
-		{ "&Brushes...",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes }, 
-		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0, FL_MENU_DIVIDER },
-		
 		{ "&Quit",			FL_ALT + 'q', (Fl_Callback *)ImpressionistUI::cb_exit },
 		{ 0 },
 	
 	{ "&Edit",		0, 0, 0, FL_SUBMENU },
+		{ "&Brushes...",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes },
 		{ "&Colors",FL_ALT + 'o' ,(Fl_Callback *)ImpressionistUI::cb_colors },
 		{ "&Undo",FL_ALT + 'u' ,(Fl_Callback *)ImpressionistUI::cb_undo },
 
 		{ 0 },
 
 	{ "&Display",		0, 0, 0, FL_SUBMENU },
-		{"&Swap Windows",FL_ALT + 'w' ,(Fl_Callback *)ImpressionistUI::cb_SwapWindows },
+		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0, FL_MENU_DIVIDER },
+		{ "&Swap Windows",FL_ALT + 'w' ,(Fl_Callback *)ImpressionistUI::cb_SwapWindows },
+		{ "&Show Dimmed View",FL_ALT + 'v' ,(Fl_Callback *)ImpressionistUI::cb_ShowDimDialog },
 		{ 0 },
 
 	{ "&Help",		0, 0, 0, FL_SUBMENU },
@@ -755,6 +777,28 @@ ImpressionistUI::ImpressionistUI() {
 		m_LineAngleSlider->deactivate();
     m_brushDialog->end();	
 
+	//dimmed view dialog
+	m_nDimAlpha = 0.2;
+	m_nShowDimImage = false;
+
+	m_dimDialog = new Fl_Window(400, 80, "Dimmed Image Dialog");
+		m_dimAlphaSlider = new Fl_Value_Slider(10, 10, 300, 20, "Alpha");
+		m_dimAlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_dimAlphaSlider->type(FL_HOR_NICE_SLIDER);
+		m_dimAlphaSlider->labelfont(FL_COURIER);
+		m_dimAlphaSlider->labelsize(12);
+		m_dimAlphaSlider->minimum(0);
+		m_dimAlphaSlider->maximum(1.00);
+		m_dimAlphaSlider->step(0.01);
+		m_dimAlphaSlider->value(m_nDimAlpha);
+		m_dimAlphaSlider->align(FL_ALIGN_RIGHT);
+		m_dimAlphaSlider->callback(cb_dimAlphaSlides);
+
+		m_dimButton = new Fl_Light_Button(10, 40, 160, 25, "&Show Dimmed Image");
+		m_dimButton->user_data((void*)(this));
+		m_dimButton->callback(cb_dim_button);
+		m_dimButton->value(m_nShowDimImage);
+	m_dimDialog->end();
 }
 
 

@@ -55,6 +55,7 @@ public:
 	unsigned char*	m_ucPainting;
 	unsigned char*	m_ucBitmapOrigin;
 	unsigned char*  m_ucDissolve;
+	unsigned char*  m_ucBackup;
 	//unsigned char*  m_ucBackupImage;//used in dim function
 	unsigned char*	m_ucAlphamap;
 

@@ -37,7 +37,7 @@ PaintView::PaintView(int			x,
 {
 	m_nWindowWidth	= w;
 	m_nWindowHeight	= h;
-
+	this->mode(FL_ALPHA);
 }
 
 
@@ -47,22 +47,28 @@ void PaintView::draw()
 	// To avoid flicker on some machines.
 	glDrawBuffer(GL_FRONT_AND_BACK);
 	#endif // !MESA
-
+	//cout << (int)valid();
 	if(!valid())
 	{
-
-		glClearColor(0.7f, 0.7f, 0.7f, 1.0);
+			
+		//glClearColor(0.7f, 0.7f, 0.7f, 0);
 
 		// We're only using 2-D, so turn off depth 
 		glDisable( GL_DEPTH_TEST );
 
 		ortho();
 
-		glClear( GL_COLOR_BUFFER_BIT );
+		//glClear( GL_COLOR_BUFFER_BIT );
 
+		//glDisable(GL_BLEND);
 		//glEnable(GL_BLEND);
 		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
+
+	//step1: clear canvas
+	glClearColor(0.7f, 0.7f, 0.7f, 0); 
+	glClear(GL_COLOR_BUFFER_BIT);
+
 
 	Point scrollpos;// = GetScrollPosition();
 	scrollpos.x = 0;
@@ -78,9 +84,11 @@ void PaintView::draw()
 	int startrow = m_pDoc->m_nPaintHeight - (scrollpos.y + drawHeight);
 	if ( startrow < 0 ) startrow = 0;
 
+	//start memory location of m_ucPainting
 	m_pPaintBitstart = m_pDoc->m_ucPainting + 
 		4 * ((m_pDoc->m_nPaintWidth * (startrow)) + scrollpos.x);
-
+	m_pBackupStart = m_pDoc->m_ucBackup + 
+		4 * ((m_pDoc->m_nPaintWidth * (startrow)) + scrollpos.x);
 	
 
 	m_nDrawWidth	= drawWidth;
@@ -91,12 +99,17 @@ void PaintView::draw()
 	m_nStartCol		= scrollpos.x;
 	m_nEndCol		= m_nStartCol + drawWidth;
 
-	if ( m_pDoc->m_ucPainting && !isAnEvent) 
-	{
+
+	/*
+	when first open the app
+	other funtion call redraw such as clear canvas,refresh() etc
+	*/
+
+	//step2:load the painting to the canvas
+	if ( m_pDoc->m_ucPainting)
 		RestoreContent();
 
-	}
-
+	
 	/*
 	GLvoid* m_pOriginBitstart = m_pDoc->m_ucBitmap +
 		3 * ((m_pDoc->m_nPaintWidth * (startrow)) + scrollpos.x);
@@ -111,7 +124,9 @@ void PaintView::draw()
 		m_pOriginBitstart);
 
 	*/
-
+	//step3: start drawing new stuff
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	if ( m_pDoc->m_ucPainting && isAnEvent) 
 	{
 
@@ -133,8 +148,8 @@ void PaintView::draw()
 		case LEFT_MOUSE_UP:
 			m_pDoc->m_pCurrentBrush->BrushEnd( source, target );
 
-			SaveCurrentContent();
-			RestoreContent();
+			//SaveCurrentContent();
+			//RestoreContent();
 			break;
 		case RIGHT_MOUSE_DOWN:
 
@@ -159,6 +174,47 @@ void PaintView::draw()
 	glDrawBuffer(GL_BACK);
 	#endif // !MESA
 
+	//step4: save the content
+	SaveCurrentContent();
+
+	//save to backup
+	glReadBuffer(GL_BACK);
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glPixelStorei(GL_PACK_ROW_LENGTH, m_pDoc->m_nPaintWidth);
+
+	glReadPixels(0,
+		m_nWindowHeight - m_nDrawHeight,
+		m_nDrawWidth,
+		m_nDrawHeight,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		m_pBackupStart);
+	/*
+	unsigned char* temp = new unsigned char[m_pDoc->m_nWidth * m_pDoc->m_nHeight * 4];
+	memcpy(temp, m_pDoc->m_ucPainting, m_pDoc->m_nWidth * m_pDoc->m_nHeight * 4);
+	*/
+	unsigned char* data = m_pDoc->m_ucBackup;
+	if (m_pDoc->m_pUI->m_nShowDimImage) {
+	//if(true){
+		int alpha = (int)(255 * (1 - m_pDoc->m_pUI->m_nDimAlpha));
+		
+		//store (1-alpha) value of dimmed image to undrawed pixel alpha channel
+		for (int i = 0; i < m_pDoc->m_nWidth * m_pDoc->m_nHeight; i++)
+		{
+			if ((int)data[i * 4 + 3] == 0)
+				data[i * 4 + 3] = alpha;
+		}
+		
+		glRasterPos2i(0, m_nWindowHeight - drawHeight);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, m_pDoc->m_nWidth);
+		glDrawPixels(drawWidth, drawHeight, GL_RGB, GL_UNSIGNED_BYTE, m_pDoc->m_ucBitmap + 3 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x));
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDrawPixels(drawWidth, drawHeight, GL_RGBA, GL_UNSIGNED_BYTE, m_pBackupStart);
+		
+	}
+	
 }
 
 
@@ -167,6 +223,7 @@ int PaintView::handle(int event)
 	switch(event)
 	{
 	case FL_ENTER:
+		cout << "event = enter" << endl;
 	    redraw();
 		break;
 	case FL_PUSH:
@@ -248,10 +305,11 @@ void PaintView::SaveCurrentContent()
 
 	
 	if (m_pDoc->m_nWidth > 0 && m_pDoc->m_nHeight > 0)
-	for (int i = 0; i < m_pDoc->m_nWidth * m_pDoc->m_nHeight; ++i)
-	{
-		((GLubyte*)m_pDoc->m_ucPainting)[i * 4 + 3] = 255;
-	}
+		for (int i = 0; i < m_pDoc->m_nWidth * m_pDoc->m_nHeight; ++i){
+			//if((int)m_pDoc->m_ucPainting[i * 4 + 3])
+				//cout << (int)m_pDoc->m_ucPainting[i * 4 + 3];
+			//((GLubyte*)m_pDoc->m_ucPainting)[i * 4 + 3] = 255;
+		}
 
 	/*
 	glReadPixels(0,
@@ -270,7 +328,7 @@ void PaintView::RestoreContent()
 	glDrawBuffer(GL_BACK);
 
 	glClear( GL_COLOR_BUFFER_BIT );
-
+	glDisable(GL_BLEND);
 	glRasterPos2i( 0, m_nWindowHeight - m_nDrawHeight );
 	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
 	glPixelStorei( GL_UNPACK_ROW_LENGTH, m_pDoc->m_nPaintWidth );
