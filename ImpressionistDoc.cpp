@@ -39,6 +39,7 @@ ImpressionistDoc::ImpressionistDoc()
 	m_ucBitmapOrigin = NULL;
 	m_ucDissolve = NULL;
 	m_ucAlphamap = NULL;
+	m_ucBackup = NULL;
 	// create one instance of each brush
 	ImpBrush::c_nBrushCount	= NUM_BRUSH_TYPE;
 	ImpBrush::c_pBrushes	= new ImpBrush* [ImpBrush::c_nBrushCount];
@@ -152,6 +153,7 @@ int ImpressionistDoc::loadImage(char *iname)
 	if ( m_ucBitmap ) delete [] m_ucBitmap;
 	if ( m_ucPainting ) delete [] m_ucPainting;
 	if (m_ucBitmapOrigin)delete[] m_ucBitmapOrigin;
+	if (m_ucBackup)delete[]m_ucBackup;
 
 	m_ucBitmapOrigin = new unsigned char[width*height * 3];
 	memcpy(m_ucBitmapOrigin, data, width*height * 3);
@@ -159,9 +161,18 @@ int ImpressionistDoc::loadImage(char *iname)
 	
 	// allocate space for draw view
 	m_ucPainting	= new unsigned char [width*height*4];
+	m_ucBackup = new unsigned char[width*height * 4];
 	memset(m_ucPainting, 0, width*height*4);
+	memset(m_ucBackup, 0, width*height * 4);
 	
-
+	/*set alpha value to 1
+	if (m_nWidth > 0 && m_nHeight > 0)
+		for (int i = 0; i < m_nWidth * m_nHeight; ++i){
+			((GLubyte*)m_ucPainting)[i * 4 + 3] = 255;
+			//((GLubyte*)m_ucPainting)[i * 4 + 1] = 255;
+			//cout << (int)m_ucPainting[i * 4 + 3];
+		}
+		//*/
 	m_pUI->m_mainWindow->resize(m_pUI->m_mainWindow->x(), 
 								m_pUI->m_mainWindow->y(), 
 								width*2, 
@@ -372,5 +383,10 @@ GLubyte* ImpressionistDoc::GetOriginalPixel( int x, int y )
 GLubyte* ImpressionistDoc::GetOriginalPixel( const Point p )
 {
 	return GetOriginalPixel( p.x, p.y );
+}
+
+void ImpressionistDoc::setLineAngle(int lineAngle)
+{
+	m_pUI->setLineAngle(lineAngle);
 }
 

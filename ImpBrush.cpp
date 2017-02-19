@@ -56,7 +56,7 @@ void ImpBrush::SetColor (const Point source)
 }
 
 void ImpBrush::saveState() {
-	unsigned char* currentState = new unsigned char[m_pDoc->m_nWidth*m_pDoc->m_nHeight * 3];
-	memcpy(currentState, m_pDoc->m_ucPainting, m_pDoc->m_nWidth*m_pDoc->m_nHeight * 3);
+	unsigned char* currentState = new unsigned char[m_pDoc->m_nWidth*m_pDoc->m_nHeight * 4];
+	memcpy(currentState, m_pDoc->m_ucPainting, m_pDoc->m_nWidth*m_pDoc->m_nHeight * 4);
 	m_pDoc->history.push(currentState);
 }

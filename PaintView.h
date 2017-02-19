@@ -6,6 +6,7 @@
 
 #ifndef PAINTVIEW_H
 #define PAINTVIEW_H
+#define _USE_MATH_DEFINES
 
 #include <FL/Fl.H>
 #include <FL/Fl_Gl_Window.H>
@@ -46,6 +47,7 @@ public:
 
 private:
 	GLvoid* m_pPaintBitstart;
+	GLvoid* m_pBackupStart;
 	int		m_nDrawWidth,
 			m_nDrawHeight,
 			m_nStartRow, 
@@ -54,7 +56,8 @@ private:
 			m_nEndCol,
 			m_nWindowWidth, 
 			m_nWindowHeight;
-
+			
+	Point	m_pStartingPoint;
 
 
 };

@@ -427,7 +427,9 @@ void ImpressionistUI::cb_undo(Fl_Menu_* o, void* v) {
 		pDoc->m_pUI->m_paintView->refresh();
 	}
 }
-
+//------------------------------------------------
+// load dissolve image
+//------------------------------------------------
 void ImpressionistUI::cb_dissolve_image(Fl_Menu_* o, void* v) {
 	ImpressionistDoc *pDoc = whoami(o)->getDocument();
 	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
@@ -435,7 +437,9 @@ void ImpressionistUI::cb_dissolve_image(Fl_Menu_* o, void* v) {
 		pDoc->dissolveImage(newfile);
 	}
 }
-
+//------------------------------------------------
+// load mural image
+//------------------------------------------------
 void ImpressionistUI::cb_mural_image(Fl_Menu_* o, void* v) {
 	ImpressionistDoc *pDoc = whoami(o)->getDocument();
 	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
@@ -443,7 +447,9 @@ void ImpressionistUI::cb_mural_image(Fl_Menu_* o, void* v) {
 		pDoc->muralImage(newfile);
 	}
 }
-
+//------------------------------------------------
+// load a image for alpha map brush
+//------------------------------------------------
 void ImpressionistUI::cb_load_alpha_map(Fl_Menu_* o, void* v) {
 	ImpressionistDoc *pDoc = whoami(o)->getDocument();
 	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
@@ -452,6 +458,36 @@ void ImpressionistUI::cb_load_alpha_map(Fl_Menu_* o, void* v) {
 	}
 
 
+}
+//------------------------------------------------
+// dimmed view dialog
+//------------------------------------------------
+void ImpressionistUI::cb_ShowDimDialog(Fl_Menu_* o, void* v) {
+	whoami(o)->m_dimDialog->show();
+}
+void ImpressionistUI::cb_dimAlphaSlides(Fl_Widget* o, void* v) {
+	ImpressionistUI* pUI = ((ImpressionistUI*)(o->user_data()));
+	pUI->m_nDimAlpha = float(((Fl_Slider *)o)->value());
+	pUI->m_paintView->refresh();
+}
+void ImpressionistUI::cb_dim_button(Fl_Widget* o, void* v) {
+	ImpressionistUI* pUI = ((ImpressionistUI*)(o->user_data()));
+	pUI->m_nShowDimImage = !pUI->m_nShowDimImage;
+	pUI->m_paintView->refresh();
+}
+
+//------------------------------------------------
+// functions of auto painting
+//------------------------------------------------
+void ImpressionistUI::cb_AutoPaintSpacingSlides(Fl_Widget* o, void* v) {
+	((ImpressionistUI*)(o->user_data()))->m_nSpacing = float(((Fl_Slider *)o)->value());
+}
+void ImpressionistUI::cb_Rand_Attr_button(Fl_Widget* o, void* v) {
+	ImpressionistUI* pUI = ((ImpressionistUI*)(o->user_data()));
+	pUI->m_nRandomAttr = !pUI->m_nRandomAttr;
+}
+void ImpressionistUI::cb_Auto_Paint_button(Fl_Widget* o, void* v) {
+	ImpressionistUI* pUI = ((ImpressionistUI*)(o->user_data()));
 }
 //---------------------------------- per instance functions --------------------------------------
 
@@ -534,28 +570,44 @@ void ImpressionistUI::setSize( int size )
 		m_BrushSizeSlider->value(m_nSize);
 }
 
+void ImpressionistUI::setLineWidth(int width) {
+	m_nLineWidth = width;
+}
+
+void ImpressionistUI::setLineAngle(int angle) {
+	m_nLineAngle = angle;
+	m_LineAngleSlider->value(m_nLineAngle);
+}
+int ImpressionistUI::getSpacing() {
+	return m_nSpacing;
+}
+
+bool ImpressionistUI::getRandomAttr() {
+	return m_nRandomAttr;
+}
+
 // Main menu definition
 Fl_Menu_Item ImpressionistUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
 		{ "&Load Image...",	FL_ALT + 'l', (Fl_Callback *)ImpressionistUI::cb_load_image },
 		{ "&Save Image...",	FL_ALT + 's', (Fl_Callback *)ImpressionistUI::cb_save_image },
 		{ "&Dissolve Image...",	FL_ALT + 'd', (Fl_Callback *)ImpressionistUI::cb_dissolve_image },
-		{ "&New Mural Image...",	FL_ALT + 'd', (Fl_Callback *)ImpressionistUI::cb_mural_image },
+		{ "&New Mural Image...",	FL_ALT + 'm', (Fl_Callback *)ImpressionistUI::cb_mural_image },
 		{ "&Load Alpha-mapped Brush",	FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_load_alpha_map },
-		{ "&Brushes...",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes }, 
-		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0, FL_MENU_DIVIDER },
-		
 		{ "&Quit",			FL_ALT + 'q', (Fl_Callback *)ImpressionistUI::cb_exit },
 		{ 0 },
 	
 	{ "&Edit",		0, 0, 0, FL_SUBMENU },
+		{ "&Brushes...",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes },
 		{ "&Colors",FL_ALT + 'o' ,(Fl_Callback *)ImpressionistUI::cb_colors },
 		{ "&Undo",FL_ALT + 'u' ,(Fl_Callback *)ImpressionistUI::cb_undo },
 
 		{ 0 },
 
 	{ "&Display",		0, 0, 0, FL_SUBMENU },
-		{"&Swap Windows",FL_ALT + 'w' ,(Fl_Callback *)ImpressionistUI::cb_SwapWindows },
+		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0, FL_MENU_DIVIDER },
+		{ "&Swap Windows",FL_ALT + 'w' ,(Fl_Callback *)ImpressionistUI::cb_SwapWindows },
+		{ "&Show Dimmed View",FL_ALT + 'v' ,(Fl_Callback *)ImpressionistUI::cb_ShowDimDialog },
 		{ 0 },
 
 	{ "&Help",		0, 0, 0, FL_SUBMENU },
@@ -623,11 +675,12 @@ ImpressionistUI::ImpressionistUI() {
 	m_nRedScale = 1.00;
 	m_nGreenScale = 1.00;
 	m_nBlueScale = 1.00;
+	
 	//color dialog definition
 	m_colorDialog = new Fl_Window(360, 100, "Color Dialog");
 		
 		//Red scale slider
-		m_AlphaSlider = new Fl_Value_Slider(10, 10, 300, 20, "Red");
+		m_AlphaSlider = new Fl_Value_Slider(10, 10, 300, 25, "Red");
 		m_AlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_AlphaSlider->type(FL_HOR_NICE_SLIDER);
 		m_AlphaSlider->labelfont(FL_COURIER);
@@ -640,7 +693,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_AlphaSlider->callback(cb_RedSlides);
 
 		//green scale slider
-		m_AlphaSlider = new Fl_Value_Slider(10, 30, 300, 20, "Green");
+		m_AlphaSlider = new Fl_Value_Slider(10, 30, 300, 25, "Green");
 		m_AlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_AlphaSlider->type(FL_HOR_NICE_SLIDER);
 		m_AlphaSlider->labelfont(FL_COURIER);
@@ -653,7 +706,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_AlphaSlider->callback(cb_GreenSlides);
 
 		//blue scale slider
-		m_AlphaSlider = new Fl_Value_Slider(10, 50, 300, 20, "Blue");
+		m_AlphaSlider = new Fl_Value_Slider(10, 50, 300, 25, "Blue");
 		m_AlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_AlphaSlider->type(FL_HOR_NICE_SLIDER);
 		m_AlphaSlider->labelfont(FL_COURIER);
@@ -676,6 +729,8 @@ ImpressionistUI::ImpressionistUI() {
 	m_nLineWidth = 1;
 	m_nLineAngle = 0;
 	m_nAlpha = 1.00;
+	m_nRandomAttr = false;
+	m_nSpacing = 1;
 
 	// brush dialog definition
 	m_brushDialog = new Fl_Window(400, 325, "Brush Dialog");
@@ -696,7 +751,7 @@ ImpressionistUI::ImpressionistUI() {
 
 
 		// Add brush size slider to the dialog 
-		m_BrushSizeSlider = new Fl_Value_Slider(10, 80, 300, 20, "Size");
+		m_BrushSizeSlider = new Fl_Value_Slider(10, 80, 300, 25, "Size");
 		m_BrushSizeSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_BrushSizeSlider->type(FL_HOR_NICE_SLIDER);
         m_BrushSizeSlider->labelfont(FL_COURIER);
@@ -710,7 +765,7 @@ ImpressionistUI::ImpressionistUI() {
 
 		// Add brush line width slider to the dialog 
 		
-		m_LineWidthSlider = new Fl_Value_Slider(10, 110, 300, 20, "Line Width");
+		m_LineWidthSlider = new Fl_Value_Slider(10, 110, 300, 25, "Line Width");
 		m_LineWidthSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_LineWidthSlider->type(FL_HOR_NICE_SLIDER);
 		m_LineWidthSlider->labelfont(FL_COURIER);
@@ -724,7 +779,7 @@ ImpressionistUI::ImpressionistUI() {
 
 		// Add brush line angle slider to the dialog 
 
-		m_LineAngleSlider = new Fl_Value_Slider(10, 140, 300, 20, "Line Angle");
+		m_LineAngleSlider = new Fl_Value_Slider(10, 140, 300, 25, "Line Angle");
 		m_LineAngleSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_LineAngleSlider->type(FL_HOR_NICE_SLIDER);
 		m_LineAngleSlider->labelfont(FL_COURIER);
@@ -738,7 +793,7 @@ ImpressionistUI::ImpressionistUI() {
 
 		// Add brush line angle slider to the dialog 
 
-		m_AlphaSlider = new Fl_Value_Slider(10, 170, 300, 20, "Alpha");
+		m_AlphaSlider = new Fl_Value_Slider(10, 170, 300, 25, "Alpha");
 		m_AlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_AlphaSlider->type(FL_HOR_NICE_SLIDER);
 		m_AlphaSlider->labelfont(FL_COURIER);
@@ -749,12 +804,55 @@ ImpressionistUI::ImpressionistUI() {
 		m_AlphaSlider->value(m_nAlpha);
 		m_AlphaSlider->align(FL_ALIGN_RIGHT);
 		m_AlphaSlider->callback(cb_AlphaSlides);
+
+		m_AutoPaintSpacingSlider = new Fl_Value_Slider(10, 210, 150, 25, "Spacing");
+		m_AutoPaintSpacingSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_AutoPaintSpacingSlider->type(FL_HOR_NICE_SLIDER);
+		m_AutoPaintSpacingSlider->labelfont(FL_COURIER);
+		m_AutoPaintSpacingSlider->labelsize(12);
+		m_AutoPaintSpacingSlider->minimum(1);
+		m_AutoPaintSpacingSlider->maximum(16);
+		m_AutoPaintSpacingSlider->step(1);
+		m_AutoPaintSpacingSlider->value(m_nSpacing);
+		m_AutoPaintSpacingSlider->align(FL_ALIGN_RIGHT);
+		m_AutoPaintSpacingSlider->callback(cb_AutoPaintSpacingSlides);
+
+		m_RandomAttrButton = new Fl_Light_Button(220, 210, 100, 25, "&Attr Rand");
+		m_RandomAttrButton->user_data((void*)(this));
+		m_RandomAttrButton->callback(cb_Rand_Attr_button);
+		m_RandomAttrButton->value(m_nRandomAttr);
+
+		m_AutoPaintButton = new Fl_Button(330, 210, 50, 25, "&Paint");
+		m_AutoPaintButton->user_data((void*)(this));
+		m_AutoPaintButton->callback(cb_Auto_Paint_button);
 		
 		//disable line width slider and angle slider 
 		m_LineWidthSlider->deactivate();
 		m_LineAngleSlider->deactivate();
     m_brushDialog->end();	
 
+	//dimmed view dialog
+	m_nDimAlpha = 0.2;
+	m_nShowDimImage = false;
+
+	m_dimDialog = new Fl_Window(400, 80, "Dimmed Image Dialog");
+		m_dimAlphaSlider = new Fl_Value_Slider(10, 10, 300, 20, "Alpha");
+		m_dimAlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_dimAlphaSlider->type(FL_HOR_NICE_SLIDER);
+		m_dimAlphaSlider->labelfont(FL_COURIER);
+		m_dimAlphaSlider->labelsize(12);
+		m_dimAlphaSlider->minimum(0);
+		m_dimAlphaSlider->maximum(1.00);
+		m_dimAlphaSlider->step(0.01);
+		m_dimAlphaSlider->value(m_nDimAlpha);
+		m_dimAlphaSlider->align(FL_ALIGN_RIGHT);
+		m_dimAlphaSlider->callback(cb_dimAlphaSlides);
+
+		m_dimButton = new Fl_Light_Button(10, 40, 160, 25, "&Show Dimmed Image");
+		m_dimButton->user_data((void*)(this));
+		m_dimButton->callback(cb_dim_button);
+		m_dimButton->value(m_nShowDimImage);
+	m_dimDialog->end();
 }
 
 
