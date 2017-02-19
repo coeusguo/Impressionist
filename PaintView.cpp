@@ -152,13 +152,22 @@ void PaintView::draw()
 			//RestoreContent();
 			break;
 		case RIGHT_MOUSE_DOWN:
-
+			m_pStartingPoint = target;
 			break;
 		case RIGHT_MOUSE_DRAG:
+			RestoreContent();
 
+						// Draw a red line
+			glBegin(GL_LINES);
+			glColor3ub(255, 0, 0);
+			glVertex2d(m_pStartingPoint.x, m_pStartingPoint.y);
+			glVertex2d(target.x, target.y);
+			glEnd();
 			break;
 		case RIGHT_MOUSE_UP:
+			RestoreContent();
 
+			m_pDoc->setLineAngle(((int)(((atan2((double)target.y - m_pStartingPoint.y, (double)target.x - m_pStartingPoint.x) * 180) / M_PI) + 360)) % 360);
 			break;
 
 		default:
@@ -175,7 +184,8 @@ void PaintView::draw()
 	#endif // !MESA
 
 	//step4: save the content
-	SaveCurrentContent();
+	if(eventToDo != RIGHT_MOUSE_DOWN && eventToDo != RIGHT_MOUSE_DRAG)
+		SaveCurrentContent();
 
 	//save to backup
 	glReadBuffer(GL_BACK);
@@ -223,7 +233,7 @@ int PaintView::handle(int event)
 	switch(event)
 	{
 	case FL_ENTER:
-		cout << "event = enter" << endl;
+		//cout << "event = enter" << endl;
 	    redraw();
 		break;
 	case FL_PUSH:

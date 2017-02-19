@@ -56,8 +56,11 @@ public:
 	Fl_Slider*			m_LineWidthSlider;
 	Fl_Slider*			m_LineAngleSlider;
 	Fl_Slider*			m_AlphaSlider;
+	Fl_Slider*			m_AutoPaintSpacingSlider;
 
 	Fl_Button*          m_ClearCanvasButton;
+	Fl_Button*			m_RandomAttrButton;
+	Fl_Button*			m_AutoPaintButton;
 
 	// Member functions
 	void				setDocument(ImpressionistDoc* doc);
@@ -66,6 +69,9 @@ public:
 	void				show();
 	void				resize_windows(int w, int h);
 
+	int 				getSpacing();
+	bool				getRandomAttr();
+
 	// Interface to get attribute
 
 	int					getSize();
@@ -73,6 +79,8 @@ public:
 	int					getLineAngle();
 	double				getAlpha();
 	void				setSize(int size);
+	void				setLineAngle(int angle);
+	void				setLineWidth(int width);
 	void				passCursorPoint(const Point& p);
 
 private:
@@ -83,7 +91,8 @@ private:
 	int		m_nLineWidth;
 	int		m_nLineAngle;
 	float		m_nAlpha;
-
+	int		m_nSpacing;
+	bool	m_nRandomAttr;
 	// Static class members
 	static Fl_Menu_Item		menuitems[];
 	static Fl_Menu_Item		brushTypeMenu[NUM_BRUSH_TYPE+1];
@@ -120,7 +129,9 @@ private:
 	static void cb_ApplyColorScaling(Fl_Widget* o, void* v);
 	static void cb_dimAlphaSlides(Fl_Widget* o, void* v);
 	static void cb_dim_button(Fl_Widget* o, void* v);
-	
+	static void cb_AutoPaintSpacingSlides(Fl_Widget* o, void* v);
+	static void cb_Rand_Attr_button(Fl_Widget* o, void* v);
+	static void cb_Auto_Paint_button(Fl_Widget* o, void* v);
 };
 
 #endif

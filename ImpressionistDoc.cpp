@@ -385,3 +385,8 @@ GLubyte* ImpressionistDoc::GetOriginalPixel( const Point p )
 	return GetOriginalPixel( p.x, p.y );
 }
 
+void ImpressionistDoc::setLineAngle(int lineAngle)
+{
+	m_pUI->setLineAngle(lineAngle);
+}
+
