@@ -385,18 +385,25 @@ void PaintView::autoPaint() {
 	ImpressionistUI* pUI = m_pDoc->m_pUI;
 	vector<int> index;
 	int spacing = pUI->getSpacing();
-	//cout << "spacing:" << spacing << endl;
-	bool randAttr = pUI->getRandomAttr();
-	//cout << "randAttr:" << randAttr << endl;
+	
 	int height = m_pDoc->m_nHeight;
 	int width = m_pDoc->m_nWidth;
-
 	ImpBrush* currentBrush = m_pDoc->m_pCurrentBrush;
 
+	//randAttr part
+	bool randAttr = pUI->getRandomAttr();
+	int size = pUI->getSize();
+	int lineWidth = pUI->getLineAngle();
+	int lineAngle = pUI->getLineAngle();
+	srand(time(0));
+
+	//check whether alpha map is loaded
 	if ((m_pDoc->currentType == BRUSH_ALPHA_MAP) && (m_pDoc->m_ucAlphamap == NULL)) {
 		fl_alert("Pleas load an alpha map first!");
 		return;
 	}
+
+
 	//number of spacing per row/column
 	int xTimes = width / spacing;
 	int yTimes = height / spacing;
@@ -418,18 +425,18 @@ void PaintView::autoPaint() {
 		int x = startX + (position % xTimes)*spacing;
 		int y = startY + (position / xTimes)*spacing;
 		Point p = Point(x, y);
+		if (randAttr) {
+			pUI->setSize(size + rand() % 10 - 5);
+			pUI->setLineAngle(lineAngle + rand() % 90 - 45);
+			pUI->setLineWidth(lineWidth + rand() % 10 - 5);
+		}
 		currentBrush->BrushBegin(p, p);
 		currentBrush->BrushEnd(p, p);
 	}
-}
 
-int PaintView::generateRandomNumber( bool isLineAngle) {
-	int output = 0;
-	srand(time(0));
-	if (!isLineAngle)
-		output = rand() % 10 - 5;
-	else
-		output = rand() % 90 - 45;
-	return output;
+	//set back to origin
+	pUI->setSize(size);
+	pUI->setLineAngle(lineAngle);
+	pUI->setLineWidth(lineWidth);
 }
 

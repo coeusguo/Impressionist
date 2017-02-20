@@ -63,8 +63,6 @@ private:
 			
 	Point	m_pStartingPoint;
 
-	//used to generate random number according to the input
-	int generateRandomNumber(bool isLineAngle);
 };
 
 #endif
