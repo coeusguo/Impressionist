@@ -18,9 +18,11 @@ LineBrush::LineBrush(ImpressionistDoc* pDoc, char* name) :
 
 void LineBrush::BrushBegin(const Point source, const Point target)
 {	
-	saveState();
+	
 	ImpressionistDoc* pDoc = GetDocument();
 	ImpressionistUI* dlg = pDoc->m_pUI;
+	if (!dlg->getEnableAutoDraw())
+		saveState();
 
 
 	BrushMove(source, target);

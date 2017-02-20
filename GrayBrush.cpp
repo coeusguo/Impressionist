@@ -18,9 +18,11 @@ GrayBrush::GrayBrush(ImpressionistDoc* pDoc, char* name) :
 
 void GrayBrush::BrushBegin(const Point source, const Point target)
 {
-	saveState();
+	
 	ImpressionistDoc* pDoc = GetDocument();
 	ImpressionistUI* dlg = pDoc->m_pUI;
+	if (!dlg->getEnableAutoDraw())
+		saveState();
 
 	int size = pDoc->getSize();
 

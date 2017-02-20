@@ -44,8 +44,8 @@ void BlurBrush::BrushBegin(const Point source, const Point target)
 	ImpressionistUI* dlg = pDoc->m_pUI;
 
 	int size = pDoc->getSize();
-
-	saveState();
+	if (!dlg->getEnableAutoDraw())
+		saveState();
 
 	glPointSize((float)size);
 

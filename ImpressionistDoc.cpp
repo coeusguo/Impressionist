@@ -96,6 +96,7 @@ char* ImpressionistDoc::getImageName()
 void ImpressionistDoc::setBrushType(int type)
 {
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[type];
+	currentType = type;
 }
 
 //---------------------------------------------------------
@@ -387,6 +388,6 @@ GLubyte* ImpressionistDoc::GetOriginalPixel( const Point p )
 
 void ImpressionistDoc::setLineAngle(int lineAngle)
 {
-	m_pUI->setLineAngle(lineAngle);
+		m_pUI->setLineAngle(lineAngle);
 }
 

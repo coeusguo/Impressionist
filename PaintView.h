@@ -13,6 +13,9 @@
 #include <FL/gl.h>
 #include <GL/glu.h>
 #include <stdlib.h>
+#include <stack>
+#include <vector>
+#include <algorithm>
 
 class ImpressionistDoc;
 
@@ -41,8 +44,9 @@ public:
 
 	int getDrawHeight()const;
 
+	void autoPaint();
 
-
+	
 	ImpressionistDoc *m_pDoc;
 
 private:
@@ -59,7 +63,8 @@ private:
 			
 	Point	m_pStartingPoint;
 
-
+	//used to generate random number according to the input
+	int generateRandomNumber(bool isLineAngle);
 };
 
 #endif

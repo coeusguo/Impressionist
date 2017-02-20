@@ -10,6 +10,8 @@
 #include "paintview.h"
 #include "ImpBrush.h"
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 
 #define LEFT_MOUSE_DOWN		1
 #define LEFT_MOUSE_DRAG		2
@@ -176,19 +178,19 @@ void PaintView::draw()
 		}
 	}
 
+	if (m_pDoc->m_pUI->getEnableAutoDraw()) {
+		autoPaint();
+		m_pDoc->m_pUI->setEnableAutoDraw(false);
+	}
 	glFlush();
 
-	#ifndef MESA
-	// To avoid flicker on some machines.
-	glDrawBuffer(GL_BACK);
-	#endif // !MESA
 
 	//step4: save the content
 	if(eventToDo != RIGHT_MOUSE_DOWN && eventToDo != RIGHT_MOUSE_DRAG)
 		SaveCurrentContent();
 
 	//save to backup
-	glReadBuffer(GL_BACK);
+	glReadBuffer(GL_FRONT);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	glPixelStorei(GL_PACK_ROW_LENGTH, m_pDoc->m_nPaintWidth);
 
@@ -214,7 +216,7 @@ void PaintView::draw()
 			if ((int)data[i * 4 + 3] == 0)
 				data[i * 4 + 3] = alpha;
 		}
-		
+		glDrawBuffer(GL_BACK);
 		glRasterPos2i(0, m_nWindowHeight - drawHeight);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, m_pDoc->m_nWidth);
@@ -378,3 +380,56 @@ int PaintView::getEndCol()const {
 int PaintView::getDrawHeight()const {
 	return m_nDrawHeight;
 }
+
+void PaintView::autoPaint() {
+	ImpressionistUI* pUI = m_pDoc->m_pUI;
+	vector<int> index;
+	int spacing = pUI->getSpacing();
+	//cout << "spacing:" << spacing << endl;
+	bool randAttr = pUI->getRandomAttr();
+	//cout << "randAttr:" << randAttr << endl;
+	int height = m_pDoc->m_nHeight;
+	int width = m_pDoc->m_nWidth;
+
+	ImpBrush* currentBrush = m_pDoc->m_pCurrentBrush;
+
+	if ((m_pDoc->currentType == BRUSH_ALPHA_MAP) && (m_pDoc->m_ucAlphamap == NULL)) {
+		fl_alert("Pleas load an alpha map first!");
+		return;
+	}
+	//number of spacing per row/column
+	int xTimes = width / spacing;
+	int yTimes = height / spacing;
+
+	for (int i = 0; i < xTimes*yTimes; i++) 
+		index.push_back(i);
+	random_shuffle(index.begin(), index.end());
+
+
+	int offset = m_nWindowHeight - m_nDrawHeight;
+	int startX = spacing / 2;
+	int startY = spacing / 2 + offset;
+	//int Continue;
+	//cin >> Continue;
+	//Point startPoint = Point(startX, startY);
+	
+	for (int i = 0; i < index.size(); i++) {
+		int position = index.at(i);
+		int x = startX + (position % xTimes)*spacing;
+		int y = startY + (position / xTimes)*spacing;
+		Point p = Point(x, y);
+		currentBrush->BrushBegin(p, p);
+		currentBrush->BrushEnd(p, p);
+	}
+}
+
+int PaintView::generateRandomNumber( bool isLineAngle) {
+	int output = 0;
+	srand(time(0));
+	if (!isLineAngle)
+		output = rand() % 10 - 5;
+	else
+		output = rand() % 90 - 45;
+	return output;
+}
+

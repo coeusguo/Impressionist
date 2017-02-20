@@ -24,10 +24,11 @@ SharpenBrush::SharpenBrush(ImpressionistDoc* pDoc, char* name) :
 
 void SharpenBrush::BrushBegin(const Point source, const Point target)
 {
-	saveState();
+	
 	ImpressionistDoc* pDoc = GetDocument();
 	ImpressionistUI* dlg = pDoc->m_pUI;
-
+	if(!dlg->getEnableAutoDraw())
+		saveState();
 	int size = pDoc->getSize();
 
 
@@ -41,6 +42,10 @@ void SharpenBrush::BrushMove(const Point source, const Point target)
 {
 	ImpressionistDoc* pDoc = GetDocument();
 	ImpressionistUI* dlg = pDoc->m_pUI;
+
+	if (!dlg->getEnableAutoDraw())
+		saveState();
+
 
 	if (pDoc == NULL) {
 		printf("PointBrush::BrushMove  document is NULL\n");

@@ -11,6 +11,8 @@
 
 #include "impressionistUI.h"
 #include "impressionistDoc.h"
+#include <iostream>
+using namespace std;
 
 /*
 //------------------------------ Widget Examples -------------------------------------------------
@@ -488,6 +490,8 @@ void ImpressionistUI::cb_Rand_Attr_button(Fl_Widget* o, void* v) {
 }
 void ImpressionistUI::cb_Auto_Paint_button(Fl_Widget* o, void* v) {
 	ImpressionistUI* pUI = ((ImpressionistUI*)(o->user_data()));
+	pUI->m_nEnableAutoDraw = true;
+	pUI->m_paintView->refresh();
 }
 //---------------------------------- per instance functions --------------------------------------
 
@@ -584,6 +588,14 @@ int ImpressionistUI::getSpacing() {
 
 bool ImpressionistUI::getRandomAttr() {
 	return m_nRandomAttr;
+}
+
+bool ImpressionistUI::getEnableAutoDraw() {
+	return m_nEnableAutoDraw;
+}
+
+void ImpressionistUI::setEnableAutoDraw(bool value) {
+	m_nEnableAutoDraw = value;
 }
 
 // Main menu definition
@@ -730,6 +742,7 @@ ImpressionistUI::ImpressionistUI() {
 	m_nLineAngle = 0;
 	m_nAlpha = 1.00;
 	m_nRandomAttr = false;
+	m_nEnableAutoDraw = false;
 	m_nSpacing = 1;
 
 	// brush dialog definition

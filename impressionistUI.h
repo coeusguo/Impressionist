@@ -82,6 +82,8 @@ public:
 	void				setLineAngle(int angle);
 	void				setLineWidth(int width);
 	void				passCursorPoint(const Point& p);
+	bool				getEnableAutoDraw();
+	void				setEnableAutoDraw(bool value);
 
 private:
 	ImpressionistDoc*	m_pDoc;		// pointer to document to communicate with the document
@@ -93,6 +95,7 @@ private:
 	float		m_nAlpha;
 	int		m_nSpacing;
 	bool	m_nRandomAttr;
+	bool	m_nEnableAutoDraw;
 	// Static class members
 	static Fl_Menu_Item		menuitems[];
 	static Fl_Menu_Item		brushTypeMenu[NUM_BRUSH_TYPE+1];

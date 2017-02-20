@@ -53,6 +53,7 @@ public:
 					m_nAlphaMapHeight;
 	// Bitmaps for original image and painting.
 	unsigned char*	m_ucBitmap;
+
 	unsigned char*	m_ucPainting;
 	unsigned char*	m_ucBitmapOrigin;
 	unsigned char*  m_ucDissolve;
@@ -62,7 +63,7 @@ public:
 
 	// The current active brush.
 	ImpBrush*			m_pCurrentBrush;	
-	
+	int					currentType;
 	//current active line brush direction control type
 	int m_pControlType;
 
