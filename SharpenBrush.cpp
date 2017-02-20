@@ -15,11 +15,12 @@ SharpenBrush::SharpenBrush(ImpressionistDoc* pDoc, char* name) :
 	ImpBrush(pDoc, name)
 	
 {
-	filter[0][0] = 0; filter[0][1] = -1; filter[0][2] = 0;
 
-	filter[1][0] = -1; filter[1][1] = 5; filter[1][2] = -1;
+	filter[0] = 0; filter[1] = -1; filter[2] = 0;
+
+	filter[3] =-1; filter[4] = 5; filter[5] = -1;
 	
-	filter[2][0] = 0; filter[2][1] = -1; filter[2][2] = 0;
+	filter[6] = 0; filter[7] = -1; filter[8] = 0;
 }
 
 void SharpenBrush::BrushBegin(const Point source, const Point target)
@@ -56,12 +57,8 @@ void SharpenBrush::BrushMove(const Point source, const Point target)
 	int y = target.y;
 	
 	//store the  pixels
-	float*** buffer = new float**[9];
-	for (int i = 0; i < 9; i++) {
-		buffer[i] = new float*[9];
-		for (int j = 0; j < 9; j++)
-			buffer[i][j] = new float[3];
-	}
+	float* buffer = new float[9 * 9 * 3];
+	memset(buffer, 0, 9 * 9 * 3);
 
 	
 	int startCol = dlg->m_paintView->getStartCol();
@@ -86,9 +83,9 @@ void SharpenBrush::BrushMove(const Point source, const Point target)
 		y = endRow-4;
 	}
 
-	for (int i = -4; i < 5; i++) {
-		for (int j = -4; j < 5; j++) {
-			applyFilter(x+i,y+j,buffer,i+4,j+4);
+	for (int Y = -4; Y < 5; Y++) {
+		for (int X = -4; X < 5; X++) {
+			applyFilter(x+X,y+Y,buffer,((X+4)+(Y+4)*9)*3);
 		}
 	}
 	
@@ -97,20 +94,16 @@ void SharpenBrush::BrushMove(const Point source, const Point target)
 	glPointSize(1);
 	glBegin(GL_POINTS);
 
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < 9; j++) {
-			glColor3ub((GLubyte)buffer[i][j][0],(GLubyte) buffer[i][j][1], (GLubyte)buffer[i][j][2]);
-			glVertex2d(x + i - 4, y + j - 4);
-		}
+	for (int i = 0; i < 9 * 9; i++) {
+		
+			glColor3ub((GLubyte)buffer[3*i],(GLubyte) buffer[3*i+1], (GLubyte)buffer[3*i+2]);
+			int dx = i % 9;
+			int dy = i / 9;
+			glVertex2d(x + dx - 4, y + dy - 4);
+		
 	}
 
 	glEnd();
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < 9; j++) {
-			delete[]buffer[i][j];
-		}
-		delete[]buffer[i];
-	}
 	delete[]buffer;
 }
 
@@ -123,14 +116,14 @@ char* SharpenBrush::BrushName(void) {
 	return ImpBrush::BrushName();
 }
 
-void SharpenBrush::applyFilter(int x,int y,float***buffer,int row,int col) {
+void SharpenBrush::applyFilter(int x,int y,float*buffer,int index) {
 	ImpressionistDoc* pDoc = GetDocument();
 
 	for (int color = 0; color < 3; color++) {
 		float result = 0;
 		for (int i = -1; i < 2; i++) {
 			for (int j = -1; j < 2; j++) {
-				result+=     (    (float)(*(pDoc->GetOriginalPixel(x + i, y + j) +color))    )*    filter[i+1][j+1];
+				result+=     (    (float)(*(pDoc->GetOriginalPixel(x + i, y + j) +color))    )*    filter[(i+1)*3+j+1];
 				
 			}
 		}
@@ -138,6 +131,6 @@ void SharpenBrush::applyFilter(int x,int y,float***buffer,int row,int col) {
 			result = 255;
 		if (result < 0)
 			result = 0;
-		buffer[row][col][color] = result;
+		buffer[index + color] = result;
 	}
 }
