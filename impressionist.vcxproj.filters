@@ -113,10 +113,10 @@
     <ClInclude Include="BlurBrush.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FilterSharpenBrush.h">
+    <ClInclude Include="AlphaMapBrush.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AlphaMapBrush.h">
+    <ClInclude Include="SharpenBrush.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

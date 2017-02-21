@@ -22,10 +22,13 @@ void AlphaMapBrush::BrushBegin(const Point source, const Point target)
 {
 	ImpressionistDoc* pDoc = GetDocument();
 	if (pDoc->m_ucAlphamap == NULL) {
-		fl_alert("Pleas load an alpha map first!");
+		fl_alert("Pleas load an alpha map first!!!!");
 		return;
 	}
-	saveState();
+
+	ImpressionistUI* dlg = pDoc->m_pUI;
+	if (!dlg->getEnableAutoDraw())
+		saveState();
 	glPointSize(1);
 
 	BrushMove(source, target);
@@ -68,7 +71,7 @@ void AlphaMapBrush::BrushMove(const Point source, const Point target)
 
 	int height = pDoc->m_nAlphaMapHeight;
 	int width = pDoc->m_nAlphaMapWidth;
-	cout << width << "," << height << endl;
+	//cout << width << "," << height << endl;
 	unsigned char* alphaMap = pDoc->m_ucAlphamap;
 
 	int beginY = -(height / 2);

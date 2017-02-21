@@ -15,13 +15,17 @@
 #include <FL/Fl_Choice.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Light_Button.H>
+#include <FL/Fl_Int_Input.H>
+#include <FL/Fl_Float_Input.H>
+#include <string>
+#include <vector>
 
 #include "Impressionist.h"
 #include "OriginalView.h"
 #include "PaintView.h"
 
 #include "ImpBrush.h"
-
+using namespace std;
 class ImpressionistUI {
 public:
 	ImpressionistUI();
@@ -62,6 +66,16 @@ public:
 	Fl_Button*			m_RandomAttrButton;
 	Fl_Button*			m_AutoPaintButton;
 
+// for filter kernel setting dialog
+	Fl_Window*			m_FilterKernelSettingDialog;
+	Fl_Int_Input*		m_NumRowsInput;
+	Fl_Int_Input*		m_NumColsInput;
+	Fl_Button*			m_ConfirmKernelSettingButton;
+// for filter kernel dialog
+	Fl_Window*			m_FilterKernelDialog;
+	vector<Fl_Float_Input*>		m_filterKernelInputMatrix;
+	Fl_Button*			m_ApplyFilterKernel;
+	Fl_Button*			m_Normalize;
 	// Member functions
 	void				setDocument(ImpressionistDoc* doc);
 	ImpressionistDoc*	getDocument();
@@ -82,6 +96,11 @@ public:
 	void				setLineAngle(int angle);
 	void				setLineWidth(int width);
 	void				passCursorPoint(const Point& p);
+	bool				getEnableAutoDraw();
+	void				setEnableAutoDraw(bool value);
+	bool				getEnableNormalize();
+	int					getKernelWidth();
+	int					getKernelHeight();
 
 private:
 	ImpressionistDoc*	m_pDoc;		// pointer to document to communicate with the document
@@ -93,6 +112,10 @@ private:
 	float		m_nAlpha;
 	int		m_nSpacing;
 	bool	m_nRandomAttr;
+	bool	m_nEnableAutoDraw;
+	bool	m_nEnableNormalize;
+	int		m_nKernelWidth;
+	int		m_nKernelHeight;
 	// Static class members
 	static Fl_Menu_Item		menuitems[];
 	static Fl_Menu_Item		brushTypeMenu[NUM_BRUSH_TYPE+1];
@@ -115,6 +138,7 @@ private:
 	static void cb_mural_image(Fl_Menu_* o, void* v);
 	static void cb_load_alpha_map(Fl_Menu_* o, void* v);
 	static void cb_ShowDimDialog(Fl_Menu_* o, void* v);
+	static void cb_filter_kernel_setting(Fl_Menu_* o, void* v);
 
 	static void	cb_brushChoice(Fl_Widget* o, void* v);
 	static void cb_brushDirectionType(Fl_Widget* o, void* v);
@@ -132,6 +156,9 @@ private:
 	static void cb_AutoPaintSpacingSlides(Fl_Widget* o, void* v);
 	static void cb_Rand_Attr_button(Fl_Widget* o, void* v);
 	static void cb_Auto_Paint_button(Fl_Widget* o, void* v);
+	static void cb_confirm_kernel_button(Fl_Widget* o, void* v);
+	static void cb_ApplyFilterKernel(Fl_Widget* o, void* v);
+	static void cb_normalize_toggle_button(Fl_Widget* o, void* v);
 };
 
 #endif

@@ -38,6 +38,8 @@ public:
 	void	setSize(int size);				// set the UI size
 	void	setLineAngle(int lineAngle);
 	char*	getImageName();					// get the current image name
+	void	applyKernelFilter();
+	void 	applyFilter(int row, int col, int kernelWidth, int kernelHeight,float* kernel,float* rgb,unsigned char* painting);
 	stack<unsigned char*>	history;
 
 // Attributes
@@ -53,6 +55,7 @@ public:
 					m_nAlphaMapHeight;
 	// Bitmaps for original image and painting.
 	unsigned char*	m_ucBitmap;
+
 	unsigned char*	m_ucPainting;
 	unsigned char*	m_ucBitmapOrigin;
 	unsigned char*  m_ucDissolve;
@@ -62,7 +65,7 @@ public:
 
 	// The current active brush.
 	ImpBrush*			m_pCurrentBrush;	
-	
+	int					currentType;
 	//current active line brush direction control type
 	int m_pControlType;
 
@@ -83,6 +86,8 @@ public:
 
 private:
 	char			m_imageName[256];
+
+	
 
 };
 

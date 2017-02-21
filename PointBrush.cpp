@@ -8,7 +8,8 @@
 #include "impressionistDoc.h"
 #include "impressionistUI.h"
 #include "pointbrush.h"
-
+#include <iostream>
+using namespace std;
 extern float frand();
 
 PointBrush::PointBrush( ImpressionistDoc* pDoc, char* name ) :
@@ -18,15 +19,13 @@ PointBrush::PointBrush( ImpressionistDoc* pDoc, char* name ) :
 
 void PointBrush::BrushBegin( const Point source, const Point target )
 {
-	saveState();
+	
 	ImpressionistDoc* pDoc = GetDocument();
 	ImpressionistUI* dlg=pDoc->m_pUI;
-
+	if(!dlg->getEnableAutoDraw())
+		saveState();
 	int size = pDoc->getSize();
-
-
-
-	glPointSize( (float)size );
+	glPointSize((float)size);
 
 	BrushMove( source, target );
 }
@@ -49,7 +48,7 @@ void PointBrush::BrushMove( const Point source, const Point target )
 	//int startRow = 0;
 	int endCol = dlg->m_paintView->getEndCol();
 	int endRow = startRow + dlg->m_paintView->getDrawHeight();
-	
+
 	if (x < startCol) {
 		x = startCol;
 	}
@@ -65,12 +64,14 @@ void PointBrush::BrushMove( const Point source, const Point target )
 	if (y > endRow) {
 		y = endRow;
 	}
+	
 
+	
 	glBegin( GL_POINTS );
 		SetColor( source );
 
 		glVertex2d( x,y );
-
+		//cout << " (" << x << "," << y << ") " << endl;
 	glEnd();
 }
 

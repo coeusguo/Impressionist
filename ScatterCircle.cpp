@@ -22,8 +22,11 @@ ScatterCircle::ScatterCircle(ImpressionistDoc* pDoc, char* name) :
 
 void ScatterCircle::BrushBegin(const Point source, const Point target)
 {
-	saveState();
+
 	ImpressionistDoc* pDoc = GetDocument();
+	ImpressionistUI* dlg = pDoc->m_pUI;
+	if (!dlg->getEnableAutoDraw())
+		saveState();
 	srand((unsigned int)time(0));
 	BrushMove(source, target);
 }

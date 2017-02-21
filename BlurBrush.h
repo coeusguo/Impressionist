@@ -20,8 +20,8 @@ public:
 	char* BrushName(void);
 
 private:
-	double filter[3][3];
-	void applyFilter(int x, int y, float*** buffer, int row, int col);
+	double filter[9];
+	void applyFilter(int x, int y, float* buffer, int index);
 };
 
 #endif#pragma once

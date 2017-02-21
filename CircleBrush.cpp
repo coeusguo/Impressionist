@@ -19,7 +19,9 @@ CircleBrush::CircleBrush(ImpressionistDoc* pDoc, char* name) :
 void CircleBrush::BrushBegin(const Point source, const Point target)
 {
 	ImpressionistDoc* pDoc = GetDocument();
-	saveState();
+	ImpressionistUI* dlg = pDoc->m_pUI;
+	if (!dlg->getEnableAutoDraw())
+		saveState();
 	BrushMove(source, target);
 }
 
