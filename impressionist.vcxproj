@@ -174,7 +174,7 @@
     <ClInclude Include="ScatterCircle.h" />
     <ClInclude Include="ScatterLine.h" />
     <ClInclude Include="ScatterPoint.h" />
-    <ClInclude Include="FilterSharpenBrush.h" />
+    <ClInclude Include="SharpenBrush.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

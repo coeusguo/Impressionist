@@ -96,6 +96,7 @@ char* ImpressionistDoc::getImageName()
 void ImpressionistDoc::setBrushType(int type)
 {
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[type];
+	currentType = type;
 }
 
 //---------------------------------------------------------
@@ -390,3 +391,108 @@ void ImpressionistDoc::setLineAngle(int lineAngle)
 	m_pUI->setLineAngle(lineAngle);
 }
 
+void ImpressionistDoc::applyKernelFilter() {
+	bool enableNormalize = m_pUI->getEnableNormalize();
+	int kernelWidth = m_pUI->getKernelWidth();
+	int kernelHeight = m_pUI->getKernelHeight();
+	int kernelSize = kernelWidth*kernelHeight;
+	float* rgb;
+	unsigned char* preservedPainting = new unsigned char[m_nHeight*m_nWidth*4];
+	memcpy(preservedPainting, m_ucPainting, m_nHeight*m_nWidth * 4);
+
+	float* kernel = new float[kernelSize];
+	float sum = 0;
+	for (int i = 0; i < kernelSize; i++) {
+		kernel[i] = atof(m_pUI->m_filterKernelInputMatrix.at(i)->value());
+		sum += kernel[i];
+	}
+
+	cout << endl;
+
+	if (enableNormalize) {
+		if (sum <= 0) {
+			fl_alert("The sum of the weight is not positive,can not normalize!");
+			return;
+		}
+		for (int i = 0; i < kernelSize; i++) {
+			kernel[i] = kernel[i] / sum;
+			cout << kernel[i] << endl;;
+		}
+	}
+
+	for (int i = 0; i < m_nHeight*m_nWidth; i++) {
+		int row = i / m_nWidth;
+		int col = i % m_nWidth;
+		rgb = new float[3];
+		memset(rgb, 0, 3);
+		applyFilter(row, col, kernelWidth, kernelHeight, kernel,rgb,preservedPainting);
+		if (rgb[0] == 256)
+			continue;
+		m_ucPainting[i * 4] = rgb[0];
+		m_ucPainting[i * 4 + 1] = rgb[1];
+		m_ucPainting[i * 4 + 2] = rgb[2];
+		delete[]rgb;
+	}
+	m_pUI->m_paintView->refresh();
+}
+
+void ImpressionistDoc::applyFilter(int row, int col,int kernelWidth,int kernelHeight,float*kernel,float* rgb,unsigned char* painting) {
+	/*
+	if (m_ucPainting[row*m_nWidth + col + 3] == 0) {
+		rgb[0] = 256;
+		return;
+	}
+	
+	*/
+	
+	/*int beginKernelX = 0;
+	int endKernelX = kernelWidth - 1;
+	int beginKernelY = 0;
+	int endKernelY = kernelHeight - 1;
+	
+	if (row < kernelHeight / 2) {
+		beginKernelY = kernelHeight / 2 - row;
+		endKernelY = kernelHeight / 2 + row;
+	}
+	if (col < kernelWidth / 2) {
+		beginKernelX = kernelWidth / 2 - col;
+		endKernelX -= kernelWidth / 2 - col;
+	}
+	*/
+	int beginY = -kernelHeight / 2;
+	int beginX = -kernelWidth / 2;
+	
+	
+	for (int color = 0; color < 3; color++) {
+		float result = 0;
+		for (int Y = beginY; Y < -beginY + 1; Y++) {
+			for (int X = beginX; X < -beginX + 1; X++) {
+				//float value = atof(m_pUI->m_filterKernelInputMatrix.at((Y - beginY + beginKernelY)*kernelWidth + X - beginX + beginKernelX)->value());
+				//cout << value<<endl;
+				//cout << (Y - beginY + beginKernelY)*kernelWidth + X - beginX + beginKernelX << endl;
+				int x, y;
+				if (col + X >= m_nWidth)
+					x = m_nWidth * 2 - (col + X) - 1;
+				else
+					x = abs(col + X);
+
+				if (row + Y >= m_nHeight)
+					y = m_nHeight * 2 - (row + Y) -1;
+				else
+					y = abs(row + Y);
+
+				int positionOfPainting = (y*m_nWidth + x) * 4;
+				int positionOfKernel = (Y - beginY)*kernelWidth + X - beginX;
+				result += ((float)painting[positionOfPainting + color] )* kernel[positionOfKernel];
+				//cout << ((row + Y)*m_nWidth + col + X);
+			}
+		}
+		if (result > 255)
+			result = 255;
+		if (result < 0)
+			result = 0;
+		//cout << result;
+		rgb[color] = result;
+	}
+
+}

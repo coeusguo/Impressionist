@@ -1,13 +1,14 @@
 //
-// SharpenBrush.h
+// FilterSharpenBrush.h
 //
-// The header file for Sharpen Brush. 
+// The header file for Line Brush. 
 //
 
 #ifndef SHARPENBRUSH_H
 #define SHARPENBRUSH_H
 
 #include "ImpBrush.h"
+#include <cmath>
 
 class SharpenBrush : public ImpBrush
 {
@@ -18,10 +19,9 @@ public:
 	void BrushMove(const Point source, const Point target);
 	void BrushEnd(const Point source, const Point target);
 	char* BrushName(void);
-
+	void applyFilter(int x, int y, float*buffer, int index);
 private:
-	int filter[3][3];
-	void applyFilter(int x,int y,float*** buffer,int row,int col);
+	int filter[9];
 };
 
-#endif#pragma once
+#endif

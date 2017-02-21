@@ -13,6 +13,9 @@
 #include <FL/gl.h>
 #include <GL/glu.h>
 #include <stdlib.h>
+#include <stack>
+#include <vector>
+#include <algorithm>
 
 class ImpressionistDoc;
 
@@ -41,8 +44,9 @@ public:
 
 	int getDrawHeight()const;
 
+	void autoPaint();
 
-
+	
 	ImpressionistDoc *m_pDoc;
 
 private:
@@ -58,7 +62,6 @@ private:
 			m_nWindowHeight;
 			
 	Point	m_pStartingPoint;
-
 
 };
 
