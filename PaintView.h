@@ -6,7 +6,6 @@
 
 #ifndef PAINTVIEW_H
 #define PAINTVIEW_H
-#define _USE_MATH_DEFINES
 
 #include <FL/Fl.H>
 #include <FL/Fl_Gl_Window.H>

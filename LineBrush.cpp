@@ -37,6 +37,70 @@ void LineBrush::BrushMove(const Point source, const Point target)
 	int length = pDoc->getSize();
 	int width = pDoc->getLineWidth();
 	int angle = pDoc->getLineAngle();
+	switch (pDoc->m_pControlType)
+	{
+	case SLIDER_RMOUSE:
+		angle = pDoc->getLineAngle();
+		break;
+	case GRADIENT:
+	{ // need {} to instantiate variables that will only be used inside this case
+		// instantiate sobel operators
+		int sobelX[3][3] = {
+			{-1, 0, 1},
+			{-2, 0, 2},
+			(-1, 0, 1)
+		};
+		int sobelY[3][3] = {
+			{1, 2, 1},
+			{0, 0, 0},
+			{-1, -2, -1}
+		};
+
+		// calculate vector
+		int pixels[3][3];
+		int gx = 0;
+		int gy = 0;
+		for (int r = 0; r < 3; r++)
+		{
+			for (int c = 0; c < 3; c++)
+			{
+				// get the original pixel
+				pixels[r][c] = *(pDoc->GetOriginalPixel(target.x + r - 1, target.y + c - 1));
+				// calculate Gx and Gy
+				gx += pixels[r][c] * sobelX[r][c];
+				gy += pixels[r][c] * sobelY[r][c];
+			}
+		}
+
+		if (gx == 0) // since arctan would be undefined
+		{
+			angle = 90;
+		}
+		else
+		{
+			angle = (int)((atan2(gy, gx) * 180 / M_PI) + 360) % 360;
+		}
+		break;
+	}
+	case CURSOR:
+	{
+		int xDifference = target.x - source.x;
+		int yDifference = target.y - source.y;
+
+		if (xDifference == 0)
+		{
+			angle = 90;
+		}
+		else
+		{
+			angle = (int)((atan2(yDifference, xDifference) * 180 / M_PI) + 360) % 360;
+		}
+
+		break;
+	}
+	default:
+		break;
+	}
 	int size = pDoc->getSize();
 	float radian = (angle / 360.00)*twoPi;
 	
