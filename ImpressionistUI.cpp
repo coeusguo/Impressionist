@@ -493,6 +493,80 @@ void ImpressionistUI::cb_Auto_Paint_button(Fl_Widget* o, void* v) {
 	pUI->m_nEnableAutoDraw = true;
 	pUI->m_paintView->refresh();
 }
+//------------------------------------------------
+// set the size of filter kernel
+//------------------------------------------------
+void ImpressionistUI::cb_filter_kernel_setting(Fl_Menu_* o, void* v) {
+	if (whoami(o)->getDocument()->m_ucBitmap == NULL) {
+		fl_alert("Plase load a image first!");
+		return;
+	}
+	whoami(o)->m_FilterKernelSettingDialog->show();
+}
+void ImpressionistUI::cb_confirm_kernel_button(Fl_Widget* o, void* v) {
+	ImpressionistUI* pUI = ((ImpressionistUI*)(o->user_data()));
+	string widthString = pUI->m_NumColsInput->value();
+	string heightString = pUI->m_NumRowsInput->value();
+
+	if (widthString.length() == 0 || heightString.length() == 0) {
+		fl_alert("Please enter a number");
+		return;
+	}
+
+	pUI->m_nKernelWidth = atoi(pUI->m_NumColsInput->value());
+	pUI->m_nKernelHeight = atoi(pUI->m_NumRowsInput->value());
+
+	int windowWidth = pUI->m_nKernelWidth * 40 + 10;
+	int windowHeight = pUI->m_nKernelHeight * 30 + 40;
+
+	if (pUI->m_nKernelWidth % 2 == 0 || pUI->m_nKernelHeight % 2 == 0) {
+		fl_alert("Please enter an odd number");
+		return;
+	}
+	pUI->m_FilterKernelSettingDialog->hide();
+
+	pUI->m_FilterKernelDialog = new Fl_Window(max(210, windowWidth), windowHeight, "Kernel Filter Dialog");
+
+	if (!pUI->m_filterKernelInputMatrix.empty()) {
+		for (Fl_Float_Input* n : pUI->m_filterKernelInputMatrix)
+			delete n;
+	}
+	pUI->m_filterKernelInputMatrix.clear();
+	if (pUI->m_Normalize)delete pUI->m_Normalize;
+	if (pUI->m_ApplyFilterKernel)delete pUI->m_ApplyFilterKernel;
+
+	for (int i = 0; i < pUI->m_nKernelWidth*pUI->m_nKernelHeight; i++) {
+		Fl_Float_Input* input = new Fl_Float_Input(10+(i%pUI->m_nKernelWidth)*40, 10+(i/ pUI->m_nKernelWidth)*30, 30, 20, "");
+		input->labelfont(FL_COURIER);
+		input->value("0");
+		pUI->m_filterKernelInputMatrix.push_back(input);
+	}
+
+	pUI->m_Normalize = new Fl_Light_Button(10, windowHeight-30, 100, 25, "&Normalize");
+	pUI->m_Normalize->user_data((void*)(pUI));
+	pUI->m_Normalize->callback(cb_normalize_toggle_button);
+	pUI->m_Normalize->value(pUI->m_nEnableNormalize);
+
+	pUI->m_ApplyFilterKernel = new Fl_Button(max(210, windowWidth)-80, windowHeight - 30, 70, 25, "&Apply");
+	pUI->m_ApplyFilterKernel->user_data((void*)(pUI));
+	pUI->m_ApplyFilterKernel->callback(cb_ApplyFilterKernel);
+
+	pUI->m_FilterKernelDialog->end();
+	pUI->m_FilterKernelDialog->show();
+}
+
+void ImpressionistUI::cb_ApplyFilterKernel(Fl_Widget* o, void* v) {
+	ImpressionistUI* pUI = ((ImpressionistUI*)(o->user_data()));
+	/*
+	for (int i = 0; i < pUI->m_nKernelHeight*pUI->m_nKernelHeight; i++)
+		cout << atoi(pUI->m_filterKernelInputMatrix.at(i)->value())<<endl;
+	return;
+	*/
+	((ImpressionistUI*)(o->user_data()))->m_pDoc->applyKernelFilter();
+}
+void ImpressionistUI::cb_normalize_toggle_button(Fl_Widget* o, void* v) {
+	((ImpressionistUI*)(o->user_data()))->m_nEnableNormalize = !((ImpressionistUI*)(o->user_data()))->m_nEnableNormalize;
+}
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -598,6 +672,18 @@ void ImpressionistUI::setEnableAutoDraw(bool value) {
 	m_nEnableAutoDraw = value;
 }
 
+bool ImpressionistUI::getEnableNormalize() {
+	return m_nEnableNormalize;
+}
+
+int ImpressionistUI::getKernelWidth() {
+	return m_nKernelWidth;
+}
+
+int ImpressionistUI::getKernelHeight() {
+	return m_nKernelHeight;
+}
+
 // Main menu definition
 Fl_Menu_Item ImpressionistUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
@@ -612,6 +698,7 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 	{ "&Edit",		0, 0, 0, FL_SUBMENU },
 		{ "&Brushes...",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes },
 		{ "&Colors",FL_ALT + 'o' ,(Fl_Callback *)ImpressionistUI::cb_colors },
+		{ "&Set Filter Kernel",	FL_ALT + 'f', (Fl_Callback *)ImpressionistUI::cb_filter_kernel_setting },
 		{ "&Undo",FL_ALT + 'u' ,(Fl_Callback *)ImpressionistUI::cb_undo },
 
 		{ 0 },
@@ -657,6 +744,10 @@ Fl_Menu_Item ImpressionistUI::brushDirectionControlType[3] = {
 // Add new widgets here
 //----------------------------------------------------
 ImpressionistUI::ImpressionistUI() {
+
+	m_ApplyFilterKernel = NULL;
+	m_FilterKernelDialog = NULL;
+	m_Normalize = NULL;
 	// Create the main window
 	m_mainWindow = new Fl_Window(600, 300, "Impressionist");
 		m_mainWindow->user_data((void*)(this));	// record self to be used by static callback functions
@@ -692,7 +783,7 @@ ImpressionistUI::ImpressionistUI() {
 	m_colorDialog = new Fl_Window(360, 100, "Color Dialog");
 		
 		//Red scale slider
-		m_AlphaSlider = new Fl_Value_Slider(10, 10, 300, 25, "Red");
+		m_AlphaSlider = new Fl_Value_Slider(10, 10, 300, 20, "Red");
 		m_AlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_AlphaSlider->type(FL_HOR_NICE_SLIDER);
 		m_AlphaSlider->labelfont(FL_COURIER);
@@ -705,7 +796,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_AlphaSlider->callback(cb_RedSlides);
 
 		//green scale slider
-		m_AlphaSlider = new Fl_Value_Slider(10, 30, 300, 25, "Green");
+		m_AlphaSlider = new Fl_Value_Slider(10, 30, 300, 20, "Green");
 		m_AlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_AlphaSlider->type(FL_HOR_NICE_SLIDER);
 		m_AlphaSlider->labelfont(FL_COURIER);
@@ -718,7 +809,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_AlphaSlider->callback(cb_GreenSlides);
 
 		//blue scale slider
-		m_AlphaSlider = new Fl_Value_Slider(10, 50, 300, 25, "Blue");
+		m_AlphaSlider = new Fl_Value_Slider(10, 50, 300, 20, "Blue");
 		m_AlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_AlphaSlider->type(FL_HOR_NICE_SLIDER);
 		m_AlphaSlider->labelfont(FL_COURIER);
@@ -730,7 +821,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_AlphaSlider->align(FL_ALIGN_RIGHT);
 		m_AlphaSlider->callback(cb_BlueSlides);
 
-		m_ApplyScalingButton = new Fl_Button(250, 70, 70, 25, "&Apply");
+		m_ApplyScalingButton = new Fl_Button(250, 70, 70, 20, "&Apply");
 		m_ApplyScalingButton->user_data((void*)(this));
 		m_ApplyScalingButton->callback(cb_ApplyColorScaling);
 	m_colorDialog->end();
@@ -748,23 +839,23 @@ ImpressionistUI::ImpressionistUI() {
 	// brush dialog definition
 	m_brushDialog = new Fl_Window(400, 325, "Brush Dialog");
 		// Add a brush type choice to the dialog
-		m_BrushTypeChoice = new Fl_Choice(50,10,150,25,"&Brush");
+		m_BrushTypeChoice = new Fl_Choice(50,10,150,20,"&Brush");
 		m_BrushTypeChoice->user_data((void*)(this));	// record self to be used by static callback functions
 		m_BrushTypeChoice->menu(brushTypeMenu);
 		m_BrushTypeChoice->callback(cb_brushChoice);
 
-		m_ClearCanvasButton = new Fl_Button(240,10,150,25,"&Clear Canvas");
+		m_ClearCanvasButton = new Fl_Button(240,10,150,20,"&Clear Canvas");
 		m_ClearCanvasButton->user_data((void*)(this));
 		m_ClearCanvasButton->callback(cb_clear_canvas_button);
 
-		m_BrushTypeChoice = new Fl_Choice(113, 40, 160, 25, "&Stroke Direction");
+		m_BrushTypeChoice = new Fl_Choice(113, 40, 160, 20, "&Stroke Direction");
 		m_BrushTypeChoice->user_data((void*)(this));	// record self to be used by static callback functions
 		m_BrushTypeChoice->menu(brushDirectionControlType);
 		m_BrushTypeChoice->callback(cb_brushDirectionType);
 
 
 		// Add brush size slider to the dialog 
-		m_BrushSizeSlider = new Fl_Value_Slider(10, 80, 300, 25, "Size");
+		m_BrushSizeSlider = new Fl_Value_Slider(10, 80, 300, 20, "Size");
 		m_BrushSizeSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_BrushSizeSlider->type(FL_HOR_NICE_SLIDER);
         m_BrushSizeSlider->labelfont(FL_COURIER);
@@ -778,7 +869,7 @@ ImpressionistUI::ImpressionistUI() {
 
 		// Add brush line width slider to the dialog 
 		
-		m_LineWidthSlider = new Fl_Value_Slider(10, 110, 300, 25, "Line Width");
+		m_LineWidthSlider = new Fl_Value_Slider(10, 110, 300, 20, "Line Width");
 		m_LineWidthSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_LineWidthSlider->type(FL_HOR_NICE_SLIDER);
 		m_LineWidthSlider->labelfont(FL_COURIER);
@@ -792,7 +883,7 @@ ImpressionistUI::ImpressionistUI() {
 
 		// Add brush line angle slider to the dialog 
 
-		m_LineAngleSlider = new Fl_Value_Slider(10, 140, 300, 25, "Line Angle");
+		m_LineAngleSlider = new Fl_Value_Slider(10, 140, 300, 20, "Line Angle");
 		m_LineAngleSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_LineAngleSlider->type(FL_HOR_NICE_SLIDER);
 		m_LineAngleSlider->labelfont(FL_COURIER);
@@ -806,7 +897,7 @@ ImpressionistUI::ImpressionistUI() {
 
 		// Add brush line angle slider to the dialog 
 
-		m_AlphaSlider = new Fl_Value_Slider(10, 170, 300, 25, "Alpha");
+		m_AlphaSlider = new Fl_Value_Slider(10, 170, 300, 20, "Alpha");
 		m_AlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_AlphaSlider->type(FL_HOR_NICE_SLIDER);
 		m_AlphaSlider->labelfont(FL_COURIER);
@@ -818,7 +909,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_AlphaSlider->align(FL_ALIGN_RIGHT);
 		m_AlphaSlider->callback(cb_AlphaSlides);
 
-		m_AutoPaintSpacingSlider = new Fl_Value_Slider(10, 210, 150, 25, "Spacing");
+		m_AutoPaintSpacingSlider = new Fl_Value_Slider(10, 210, 150, 20, "Spacing");
 		m_AutoPaintSpacingSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_AutoPaintSpacingSlider->type(FL_HOR_NICE_SLIDER);
 		m_AutoPaintSpacingSlider->labelfont(FL_COURIER);
@@ -866,6 +957,25 @@ ImpressionistUI::ImpressionistUI() {
 		m_dimButton->callback(cb_dim_button);
 		m_dimButton->value(m_nShowDimImage);
 	m_dimDialog->end();
+	
+	m_FilterKernelSettingDialog = new Fl_Window(230, 70, "Kernel Filter Setting Dialog");
+		m_NumColsInput = new Fl_Int_Input(60, 10, 40, 20, "Width:");
+		m_NumColsInput->labelfont(FL_COURIER);
+		m_NumColsInput->labelsize(12);
+		m_NumColsInput->value("3"); 
+	
+		m_NumRowsInput = new Fl_Int_Input(170, 10, 40, 20, "Height:");
+		m_NumRowsInput->labelfont(FL_COURIER);
+		m_NumRowsInput->labelsize(12);
+		m_NumRowsInput->value("3");
+
+		m_ConfirmKernelSettingButton = new Fl_Button(130, 40, 70, 20, "&Confirm");
+		m_ConfirmKernelSettingButton->user_data((void*)(this));
+		m_ConfirmKernelSettingButton->callback(cb_confirm_kernel_button);
+		 
+	m_FilterKernelSettingDialog->end();
+
+	m_nEnableNormalize = false;
 }
 
 

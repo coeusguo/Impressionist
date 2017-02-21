@@ -38,6 +38,8 @@ public:
 	void	setSize(int size);				// set the UI size
 	void	setLineAngle(int lineAngle);
 	char*	getImageName();					// get the current image name
+	void	applyKernelFilter();
+	void 	applyFilter(int row, int col, int kernelWidth, int kernelHeight,float* kernel,float* rgb,unsigned char* painting);
 	stack<unsigned char*>	history;
 
 // Attributes
@@ -84,6 +86,8 @@ public:
 
 private:
 	char			m_imageName[256];
+
+	
 
 };
 
