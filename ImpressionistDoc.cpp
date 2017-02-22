@@ -277,10 +277,12 @@ int ImpressionistDoc::loadAnotherImage(char *iname) {
 
 	unsigned char* temp2 = new unsigned char[width*height];
 	for (int i = 0; i < width*height; i++)
-		temp2[i] = (m_ucAnotherBitmap[i * 3] + m_ucAnotherBitmap[i * 3 + 1] + m_ucAnotherBitmap[i * 3 + 2]) / 3;
+		temp2[i] = m_ucAnotherBitmap[i * 3] * 0.299 + m_ucAnotherBitmap[i * 3 + 1]*0.587 + m_ucAnotherBitmap[i * 3 + 2] * 0.144;
 
-	for (int i = 0; i < width*height; i++){
-		m_ucAnotherGradientMap[i] = applySobel(i / m_nWidth, i % m_nWidth,true,temp2);
+	for (int i = 0; i < width*height; i++) {
+		int row = i / width;
+		int col = i % width;
+		m_ucAnotherGradientMap[i] = applySobel(row, col,true, temp2);
 	}
 	//applyFilter(int row, int col,int kernelWidth,int kernelHeight,float*kernel,float* rgb,unsigned char* painting)
 	delete[]temp2;
@@ -644,21 +646,23 @@ void ImpressionistDoc::applyFilter(int row, int col,int kernelWidth,int kernelHe
 
 }
 
-float ImpressionistDoc::applySobel(int row, int col,bool calculateGradient,unsigned char* source) {
+float ImpressionistDoc::applySobel(int row, int col,bool calculateGradient,const unsigned char* source) {
 
 	float gradient = 0;
-	float Gx = 0;
-	float Gy = 0;
+	int Gx = 0;
+	int Gy = 0.0;
+	/*
 	for (int Y = -1; Y < 2; Y++) {
 		for (int X = -1; X < 2; X++) {
 			
 			int x, y;
+			//special contidion
 			if (col + X >= m_nWidth)
 				x = m_nWidth * 2 - (col + X) - 1;
 			else
 				x = abs(col + X);
 
-			if (row >= m_nHeight)
+			if (row + Y >= m_nHeight)
 				y = m_nHeight * 2 - (row + Y) - 1;
 			else
 				y = abs(row + Y);
@@ -670,14 +674,21 @@ float ImpressionistDoc::applySobel(int row, int col,bool calculateGradient,unsig
 			Gy += source[mapPosition] * sobelHorizontal[filterPosition];
 		}
 	}
+	*/
 
+	Gx = -source[(row - 1)*m_nWidth + col - 1] + source[(row - 1)*m_nWidth + col + 1] - 2 * source[(row)*m_nWidth + col - 1] + 2 * source[(row)*m_nWidth + col + 1] - source[(row + 1)*m_nWidth + col - 1] + source[(row + 1)*m_nWidth + col + 1];
+	Gy = -source[(row - 1)*m_nWidth + col - 1] + source[(row + 1)*m_nWidth + col - 1] - 2 * source[(row - 1)*m_nWidth + col] + 2 * source[(row + 1)*m_nWidth + col] - source[(row - 1)*m_nWidth + col + 1] + source[(row + 1)*m_nWidth + col + 1];
 	if (calculateGradient) {
 		if (Gx == 0)
 			return 90;
-		else
-			return atan(Gy/Gx);
+		else {
+			//cout << Gx << ",";
+			return atan((double)Gy / Gx);
+			
+		}
 	}
 	gradient = sqrt(Gx * Gx + Gy * Gy);
+	//cout << gradient << ",";
 	return gradient;
 }
 

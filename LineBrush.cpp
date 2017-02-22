@@ -56,7 +56,7 @@ void LineBrush::BrushMove(const Point source, const Point target)
 		int sobelX[3][3] = {
 			{-1, 0, 1},
 			{-2, 0, 2},
-			(-1, 0, 1)
+			{-1, 0, 1 }
 		};
 		int sobelY[3][3] = {
 			{1, 2, 1},
@@ -107,7 +107,7 @@ void LineBrush::BrushMove(const Point source, const Point target)
 		break;
 	}
 	case ANOTHER_IMAGE_GRADIENT:
-		radian = pDoc->m_ucAnotherBitmap[target.x + target.y*pDoc->m_nWidth];
+		radian = pDoc->m_ucAnotherGradientMap[source.x + source.y*pDoc->m_nWidth];
 		break;
 	default:
 		break;

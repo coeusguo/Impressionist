@@ -43,8 +43,9 @@ public:
 	char*	getImageName();					// get the current image name
 	void	applyKernelFilter();
 	void 	applyFilter(int row, int col, int kernelWidth, int kernelHeight,float* kernel,float* rgb,unsigned char* painting);
-	float	applySobel(int row, int col,bool calculateGradient,unsigned char* source);
+	float	applySobel(int row, int col,bool calculateGradient,const unsigned char* source);
 	void	applyGaussianFilter(unsigned char* source, unsigned char* target,int width,int height);
+	int*    getGradientBySobel(const unsigned char* image, int width, int height);
 	void	generateEdgeImage();
 	stack<unsigned char*>	history;
 
