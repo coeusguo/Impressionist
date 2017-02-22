@@ -262,10 +262,14 @@ void ImpressionistUI::cb_brushChoice(Fl_Widget* o, void* v)
 	if (type != BRUSH_LINES && type != BRUSH_SCATTERED_LINES) {
 		pUI->m_LineWidthSlider->deactivate();
 		pUI->m_LineAngleSlider->deactivate();
+		pUI->m_AnotherGradientButton->deactivate();
+		pUI->m_EdgeClipingButton->deactivate();
 	}
 	else {
 		pUI->m_LineWidthSlider->activate();
 		pUI->m_LineAngleSlider->activate();
+		pUI->m_AnotherGradientButton->activate();
+		pUI->m_EdgeClipingButton->activate();
 	}
 
 	if (type == BRUSH_SHARPEN_POINTS || type == BRUSH_BLUR_POINTS||type ==BRUSH_ALPHA_MAP) {
@@ -542,6 +546,7 @@ void ImpressionistUI::cb_confirm_kernel_button(Fl_Widget* o, void* v) {
 		pUI->m_filterKernelInputMatrix.push_back(input);
 	}
 
+
 	pUI->m_Normalize = new Fl_Light_Button(10, windowHeight-30, 100, 25, "&Normalize");
 	pUI->m_Normalize->user_data((void*)(pUI));
 	pUI->m_Normalize->callback(cb_normalize_toggle_button);
@@ -567,6 +572,42 @@ void ImpressionistUI::cb_ApplyFilterKernel(Fl_Widget* o, void* v) {
 void ImpressionistUI::cb_normalize_toggle_button(Fl_Widget* o, void* v) {
 	((ImpressionistUI*)(o->user_data()))->m_nEnableNormalize = !((ImpressionistUI*)(o->user_data()))->m_nEnableNormalize;
 }
+//------------------------------------------------
+// Edge related funtion
+//------------------------------------------------
+void ImpressionistUI::cb_ThresholdSlides(Fl_Widget* o, void* v) {
+	((ImpressionistUI*)(o->user_data()))->m_nThreshold = float(((Fl_Slider *)o)->value());
+}
+void ImpressionistUI::cb_Generating_Edge_Image_button(Fl_Widget* o, void* v) {
+	((ImpressionistUI*)(o->user_data()))->getDocument()->generateEdgeImage();
+}
+void ImpressionistUI::cb_toggle_cliping_button(Fl_Widget* o, void* v) {
+	((ImpressionistUI*)(o->user_data()))->m_nEnableEdgeClipping = !((ImpressionistUI*)(o->user_data()))->m_nEnableEdgeClipping;
+}
+//------------------------------------------------
+// switch image in the originView window
+//------------------------------------------------
+void ImpressionistUI::cb_switch_view_type(Fl_Menu_* o, void* v) {
+	ImpressionistUI* pUI = whoami(o);
+	ImpressionistDoc* pDoc = pUI->getDocument();
+	int type = (int)v;
+	
+	if (type == EDGE_IMAGE&&pDoc->m_ucEdgeBitmap == NULL) {
+		fl_alert("Please generate or load an edge image first!");
+		return;
+	}
+	if (type == ANOTHER_IMAGE&&pDoc->m_ucAnotherBitmap == NULL) {
+		fl_alert("Please load another image first!");
+		return;
+	}
+	
+	pUI->m_origView->setViewType(type);
+
+	pUI->m_origView->refresh();
+}
+
+
+
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -684,14 +725,26 @@ int ImpressionistUI::getKernelHeight() {
 	return m_nKernelHeight;
 }
 
+int ImpressionistUI::getThreshold() {
+	return m_nThreshold;
+}
+
+bool ImpressionistUI::getEnableEdgeCliping() {
+	return m_nEnableEdgeClipping;
+}
+
 // Main menu definition
 Fl_Menu_Item ImpressionistUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
 		{ "&Load Image...",	FL_ALT + 'l', (Fl_Callback *)ImpressionistUI::cb_load_image },
+		//todo
+		{ "&Load Edge Image...",	FL_ALT + 'l', (Fl_Callback *)ImpressionistUI::cb_load_image },
+		//todo
+		{ "&Load Another Image...",	FL_ALT + 'l', (Fl_Callback *)ImpressionistUI::cb_load_image },
 		{ "&Save Image...",	FL_ALT + 's', (Fl_Callback *)ImpressionistUI::cb_save_image },
 		{ "&Dissolve Image...",	FL_ALT + 'd', (Fl_Callback *)ImpressionistUI::cb_dissolve_image },
 		{ "&New Mural Image...",	FL_ALT + 'm', (Fl_Callback *)ImpressionistUI::cb_mural_image },
-		{ "&Load Alpha-mapped Brush",	FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_load_alpha_map },
+		{ "&Load Alpha-mapped Brush",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_load_alpha_map },
 		{ "&Quit",			FL_ALT + 'q', (Fl_Callback *)ImpressionistUI::cb_exit },
 		{ 0 },
 	
@@ -704,7 +757,10 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 		{ 0 },
 
 	{ "&Display",		0, 0, 0, FL_SUBMENU },
-		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0, FL_MENU_DIVIDER },
+		{ "&Original Image",FL_ALT + 'o' ,(Fl_Callback *)ImpressionistUI::cb_switch_view_type,(void*)ORIGIN_IMAGE},
+		{ "&Edge Image",FL_ALT + 'e' ,(Fl_Callback *)ImpressionistUI::cb_switch_view_type,(void*)EDGE_IMAGE },
+		{ "&Another Image",FL_ALT + 'a' ,(Fl_Callback *)ImpressionistUI::cb_switch_view_type,(void*)ANOTHER_IMAGE, FL_MENU_DIVIDER },
+		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0 },
 		{ "&Swap Windows",FL_ALT + 'w' ,(Fl_Callback *)ImpressionistUI::cb_SwapWindows },
 		{ "&Show Dimmed View",FL_ALT + 'v' ,(Fl_Callback *)ImpressionistUI::cb_ShowDimDialog },
 		{ 0 },
@@ -835,16 +891,17 @@ ImpressionistUI::ImpressionistUI() {
 	m_nRandomAttr = false;
 	m_nEnableAutoDraw = false;
 	m_nSpacing = 1;
-
+	m_nThreshold = 150;
+	m_nEnableEdgeClipping = false;
 	// brush dialog definition
-	m_brushDialog = new Fl_Window(400, 325, "Brush Dialog");
+	m_brushDialog = new Fl_Window(390, 300, "Brush Dialog");
 		// Add a brush type choice to the dialog
 		m_BrushTypeChoice = new Fl_Choice(50,10,150,20,"&Brush");
 		m_BrushTypeChoice->user_data((void*)(this));	// record self to be used by static callback functions
 		m_BrushTypeChoice->menu(brushTypeMenu);
 		m_BrushTypeChoice->callback(cb_brushChoice);
 
-		m_ClearCanvasButton = new Fl_Button(240,10,150,20,"&Clear Canvas");
+		m_ClearCanvasButton = new Fl_Button(250,10,130,20,"&Clear Canvas");
 		m_ClearCanvasButton->user_data((void*)(this));
 		m_ClearCanvasButton->callback(cb_clear_canvas_button);
 
@@ -908,8 +965,18 @@ ImpressionistUI::ImpressionistUI() {
 		m_AlphaSlider->value(m_nAlpha);
 		m_AlphaSlider->align(FL_ALIGN_RIGHT);
 		m_AlphaSlider->callback(cb_AlphaSlides);
+		
+		m_EdgeClipingButton = new Fl_Light_Button(10, 200, 120, 25, "&Edge Clipping");
+		m_EdgeClipingButton->user_data((void*)(this));
+		m_EdgeClipingButton->callback(cb_toggle_cliping_button);
+		m_EdgeClipingButton->value(m_nEnableEdgeClipping);
+		//todo
+		m_AnotherGradientButton = new Fl_Light_Button(230, 200, 150, 25, "&Another Gradient");
+		m_AnotherGradientButton->user_data((void*)(this));
+		m_AnotherGradientButton->callback(cb_Rand_Attr_button);
+		m_AnotherGradientButton->value(m_nRandomAttr);
 
-		m_AutoPaintSpacingSlider = new Fl_Value_Slider(10, 210, 150, 20, "Spacing");
+		m_AutoPaintSpacingSlider = new Fl_Value_Slider(10, 235, 150, 20, "Spacing");
 		m_AutoPaintSpacingSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_AutoPaintSpacingSlider->type(FL_HOR_NICE_SLIDER);
 		m_AutoPaintSpacingSlider->labelfont(FL_COURIER);
@@ -921,18 +988,37 @@ ImpressionistUI::ImpressionistUI() {
 		m_AutoPaintSpacingSlider->align(FL_ALIGN_RIGHT);
 		m_AutoPaintSpacingSlider->callback(cb_AutoPaintSpacingSlides);
 
-		m_RandomAttrButton = new Fl_Light_Button(220, 210, 100, 25, "&Attr Rand");
+		m_RandomAttrButton = new Fl_Light_Button(220, 235, 100, 25, "&Attr Rand");
 		m_RandomAttrButton->user_data((void*)(this));
 		m_RandomAttrButton->callback(cb_Rand_Attr_button);
 		m_RandomAttrButton->value(m_nRandomAttr);
 
-		m_AutoPaintButton = new Fl_Button(330, 210, 50, 25, "&Paint");
+		m_AutoPaintButton = new Fl_Button(330, 235, 50, 25, "&Paint");
 		m_AutoPaintButton->user_data((void*)(this));
 		m_AutoPaintButton->callback(cb_Auto_Paint_button);
 		
 		//disable line width slider and angle slider 
 		m_LineWidthSlider->deactivate();
 		m_LineAngleSlider->deactivate();
+		m_EdgeClipingButton->deactivate();
+		m_AnotherGradientButton->deactivate();
+
+		m_ThresholdSlider = new Fl_Value_Slider(10, 265, 200, 20, "Edge Threshold");
+		m_ThresholdSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_ThresholdSlider->type(FL_HOR_NICE_SLIDER);
+		m_ThresholdSlider->labelfont(FL_COURIER);
+		m_ThresholdSlider->labelsize(12);
+		m_ThresholdSlider->minimum(0);
+		m_ThresholdSlider->maximum(500);
+		m_ThresholdSlider->step(1);
+		m_ThresholdSlider->value(m_nThreshold);
+		m_ThresholdSlider->align(FL_ALIGN_RIGHT);
+		m_ThresholdSlider->callback(cb_ThresholdSlides);
+
+		m_RandomAttrButton = new Fl_Button(330, 265, 50, 25, "&Do it");
+		m_RandomAttrButton->user_data((void*)(this));
+		m_RandomAttrButton->callback(cb_Generating_Edge_Image_button);
+
     m_brushDialog->end();	
 
 	//dimmed view dialog
@@ -983,3 +1069,4 @@ void ImpressionistUI::passCursorPoint(const Point& p) {
 	m_origView->setCursor(p);
 	
 }
+

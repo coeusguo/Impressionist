@@ -61,10 +61,14 @@ public:
 	Fl_Slider*			m_LineAngleSlider;
 	Fl_Slider*			m_AlphaSlider;
 	Fl_Slider*			m_AutoPaintSpacingSlider;
+	Fl_Slider*			m_ThresholdSlider;
 
 	Fl_Button*          m_ClearCanvasButton;
 	Fl_Button*			m_RandomAttrButton;
 	Fl_Button*			m_AutoPaintButton;
+	Fl_Button*			m_EdgeClipingButton;
+	Fl_Button*			m_AnotherGradientButton;
+	Fl_Button*			m_DoItButton;
 
 // for filter kernel setting dialog
 	Fl_Window*			m_FilterKernelSettingDialog;
@@ -101,6 +105,8 @@ public:
 	bool				getEnableNormalize();
 	int					getKernelWidth();
 	int					getKernelHeight();
+	int					getThreshold();
+	bool				getEnableEdgeCliping();
 
 private:
 	ImpressionistDoc*	m_pDoc;		// pointer to document to communicate with the document
@@ -109,13 +115,16 @@ private:
 	int		m_nSize;
 	int		m_nLineWidth;
 	int		m_nLineAngle;
-	float		m_nAlpha;
+	float	m_nAlpha;
 	int		m_nSpacing;
 	bool	m_nRandomAttr;
 	bool	m_nEnableAutoDraw;
 	bool	m_nEnableNormalize;
 	int		m_nKernelWidth;
 	int		m_nKernelHeight;
+	int		m_nThreshold;
+	bool	m_nEnableEdgeClipping;
+
 	// Static class members
 	static Fl_Menu_Item		menuitems[];
 	static Fl_Menu_Item		brushTypeMenu[NUM_BRUSH_TYPE+1];
@@ -139,6 +148,7 @@ private:
 	static void cb_load_alpha_map(Fl_Menu_* o, void* v);
 	static void cb_ShowDimDialog(Fl_Menu_* o, void* v);
 	static void cb_filter_kernel_setting(Fl_Menu_* o, void* v);
+	static void cb_switch_view_type(Fl_Menu_* o, void* v);
 
 	static void	cb_brushChoice(Fl_Widget* o, void* v);
 	static void cb_brushDirectionType(Fl_Widget* o, void* v);
@@ -159,6 +169,9 @@ private:
 	static void cb_confirm_kernel_button(Fl_Widget* o, void* v);
 	static void cb_ApplyFilterKernel(Fl_Widget* o, void* v);
 	static void cb_normalize_toggle_button(Fl_Widget* o, void* v);
+	static void cb_ThresholdSlides(Fl_Widget* o, void* v);
+	static void cb_Generating_Edge_Image_button(Fl_Widget* o, void* v);
+	static void cb_toggle_cliping_button(Fl_Widget* o, void* v);
 };
 
 #endif

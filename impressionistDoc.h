@@ -40,6 +40,8 @@ public:
 	char*	getImageName();					// get the current image name
 	void	applyKernelFilter();
 	void 	applyFilter(int row, int col, int kernelWidth, int kernelHeight,float* kernel,float* rgb,unsigned char* painting);
+	float	applySobel(int row, int col);
+	void	generateEdgeImage();
 	stack<unsigned char*>	history;
 
 // Attributes
@@ -55,6 +57,11 @@ public:
 					m_nAlphaMapHeight;
 	// Bitmaps for original image and painting.
 	unsigned char*	m_ucBitmap;
+	unsigned char*  m_ucEdgeBitmap;
+	unsigned char*  m_ucGrayScaleMap;
+	unsigned char*  m_ucAnotherBitmap;
+	float*			m_ucGradientMap;
+	bool*			m_ucEdgePositionMap;
 
 	unsigned char*	m_ucPainting;
 	unsigned char*	m_ucBitmapOrigin;
@@ -83,6 +90,8 @@ public:
 	// Get the color of the original picture at the specified point	
 	GLubyte* GetOriginalPixel( const Point p );  
 
+	int sobelVertical[9];
+	int sobelHorizontal[9];
 
 private:
 	char			m_imageName[256];

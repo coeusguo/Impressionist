@@ -158,7 +158,7 @@ void PaintView::draw()
 			break;
 		case RIGHT_MOUSE_DRAG:
 			RestoreContent();
-
+			glLineWidth(2);
 						// Draw a red line
 			glBegin(GL_LINES);
 			glColor3ub(255, 0, 0);
