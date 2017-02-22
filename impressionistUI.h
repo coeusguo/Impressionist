@@ -26,6 +26,11 @@
 
 #include "ImpBrush.h"
 using namespace std;
+
+//painterly style and stroke enum
+
+enum {IMPRESSIONIST = 0,EXPRESSIONIST,COLOR_WASH,POINTILLIST,CUSTOMIZE};
+enum {P_CURVE_BRUSH = 0,P_CIRCLE_BRUSH,P_CLIP_LINE_BRUSH,P_LINE_BRUSH};
 class ImpressionistUI {
 public:
 	ImpressionistUI();
@@ -80,6 +85,49 @@ public:
 	vector<Fl_Float_Input*>		m_filterKernelInputMatrix;
 	Fl_Button*			m_ApplyFilterKernel;
 	Fl_Button*			m_Normalize;
+
+//painterly dialog
+	Fl_Window*			m_painterlylDialog;
+	//dropdown and button
+	Fl_Choice*			m_painterlyStyle;
+	Fl_Choice*			m_painterlyStroke;
+	Fl_Button*			m_painterlyRun;
+	//horizontal sliders
+	Fl_Slider*			m_painterlyThreshold;
+	Fl_Slider*			m_painterlyCurvature;
+	Fl_Slider*			m_painterlyBlur;
+	Fl_Slider*			m_painterlyGridSize;
+	Fl_Slider*			m_painterlyMinStrokeL;
+	Fl_Slider*			m_painterlyMaxStrokeL;
+	Fl_Slider*			m_painterlyAlpha;
+	Fl_Slider*			m_painterlyLayers;
+	Fl_Slider*			m_painterlyR0Level;
+	//vertical sliders
+	Fl_Slider*			m_painterlyJr;
+	Fl_Slider*			m_painterlyJg;
+	Fl_Slider*			m_painterlyJb;
+	Fl_Slider*			m_painterlyJh;
+	Fl_Slider*			m_painterlyJs;
+	Fl_Slider*			m_painterlyJv;
+
+	//painterly variables
+	int		m_nPainterlyCurrentStyle;
+	int		m_nPainterlyCurrentStroke;
+	int		m_nPainterlyThreshold;
+	float   m_nPainterlyCurvature;
+	float   m_nPainterlyBlur;
+	float   m_nPainterlyGirdSize;
+	int		m_nPainterlyMinStrokeL;
+	int		m_nPainterlyMaxStrokeL;
+	float   m_nPainterlyAlpha;
+	int		m_nPainterlyLayers;
+	int		m_nPainterlyR0Level;
+	float	m_nPainterlyJr;
+	float	m_nPainterlyJg;
+	float	m_nPainterlyJb;
+	float	m_nPainterlyJh;
+	float	m_nPainterlyJs;
+	float	m_nPainterlyJv;
 	// Member functions
 	void				setDocument(ImpressionistDoc* doc);
 	ImpressionistDoc*	getDocument();
@@ -128,10 +176,15 @@ private:
 	bool	m_nAnotherGradient;
 	int		m_nBrushDirectionTypeCatche;
 
+	
+
 	// Static class members
 	static Fl_Menu_Item		menuitems[];
 	static Fl_Menu_Item		brushTypeMenu[NUM_BRUSH_TYPE+1];
 	static Fl_Menu_Item		brushDirectionControlType[3];
+	static Fl_Menu_Item		painterlyStyleType[5];
+	static Fl_Menu_Item		painterlyStrokeType[4];
+
 
 	static ImpressionistUI*	whoami(Fl_Menu_* o);
 
@@ -154,6 +207,7 @@ private:
 	static void cb_switch_view_type(Fl_Menu_* o, void* v);
 	static void cb_load_another_image(Fl_Menu_* o, void* v);
 	static void cb_load_edge_image(Fl_Menu_* o, void* v);
+	static void cb_painterly(Fl_Menu_* o, void* v);
 
 	static void	cb_brushChoice(Fl_Widget* o, void* v);
 	static void cb_brushDirectionType(Fl_Widget* o, void* v);
@@ -178,6 +232,25 @@ private:
 	static void cb_Generating_Edge_Image_button(Fl_Widget* o, void* v);
 	static void cb_toggle_cliping_button(Fl_Widget* o, void* v);
 	static void cb_another_gradient_button(Fl_Widget* o, void* v);
+	//painterly
+	static void cb_painterly_Type(Fl_Widget* o, void* v);
+	static void cb_painterlyStrokeType(Fl_Widget* o, void* v);
+	static void cb_painterly_run_button(Fl_Widget* o, void* v);
+	static void cb_painterlyThresholdSlides(Fl_Widget* o, void* v);
+	static void cb_paintlyCurvatureSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyBlurSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyGridSizeSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyMinStrokeSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyMaxStrokeSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyAlphaSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyLayerSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyR0LevelSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyJrSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyJgSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyJbSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyJhSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyJsSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyJvSlides(Fl_Widget* o, void* v);
 };
 
 #endif
