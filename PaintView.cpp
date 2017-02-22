@@ -158,8 +158,10 @@ void PaintView::draw()
 			break;
 		case RIGHT_MOUSE_DRAG:
 			RestoreContent();
+
 			glLineWidth(2);
 						// Draw a red line
+			// Draw a red line
 			glBegin(GL_LINES);
 			glColor3ub(255, 0, 0);
 			glVertex2d(m_pStartingPoint.x, m_pStartingPoint.y);

@@ -107,6 +107,7 @@ public:
 	int					getKernelHeight();
 	int					getThreshold();
 	bool				getEnableEdgeCliping();
+	bool				getAnotherGradient();
 
 private:
 	ImpressionistDoc*	m_pDoc;		// pointer to document to communicate with the document
@@ -124,6 +125,8 @@ private:
 	int		m_nKernelHeight;
 	int		m_nThreshold;
 	bool	m_nEnableEdgeClipping;
+	bool	m_nAnotherGradient;
+	int		m_nBrushDirectionTypeCatche;
 
 	// Static class members
 	static Fl_Menu_Item		menuitems[];
@@ -149,6 +152,8 @@ private:
 	static void cb_ShowDimDialog(Fl_Menu_* o, void* v);
 	static void cb_filter_kernel_setting(Fl_Menu_* o, void* v);
 	static void cb_switch_view_type(Fl_Menu_* o, void* v);
+	static void cb_load_another_image(Fl_Menu_* o, void* v);
+	static void cb_load_edge_image(Fl_Menu_* o, void* v);
 
 	static void	cb_brushChoice(Fl_Widget* o, void* v);
 	static void cb_brushDirectionType(Fl_Widget* o, void* v);
@@ -172,6 +177,7 @@ private:
 	static void cb_ThresholdSlides(Fl_Widget* o, void* v);
 	static void cb_Generating_Edge_Image_button(Fl_Widget* o, void* v);
 	static void cb_toggle_cliping_button(Fl_Widget* o, void* v);
+	static void cb_another_gradient_button(Fl_Widget* o, void* v);
 };
 
 #endif

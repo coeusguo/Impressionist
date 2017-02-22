@@ -264,12 +264,16 @@ void ImpressionistUI::cb_brushChoice(Fl_Widget* o, void* v)
 		pUI->m_LineAngleSlider->deactivate();
 		pUI->m_AnotherGradientButton->deactivate();
 		pUI->m_EdgeClipingButton->deactivate();
+		pUI->m_BrushTypeChoice->deactivate();
 	}
 	else {
+		if (pUI->m_nAnotherGradient && pDoc->m_ucAnotherBitmap)
+			pUI->m_nBrushDirectionTypeCatche = pUI->m_pDoc->m_pControlType;
 		pUI->m_LineWidthSlider->activate();
 		pUI->m_LineAngleSlider->activate();
 		pUI->m_AnotherGradientButton->activate();
 		pUI->m_EdgeClipingButton->activate();
+		pUI->m_BrushTypeChoice->activate();
 	}
 
 	if (type == BRUSH_SHARPEN_POINTS || type == BRUSH_BLUR_POINTS||type ==BRUSH_ALPHA_MAP) {
@@ -584,6 +588,14 @@ void ImpressionistUI::cb_Generating_Edge_Image_button(Fl_Widget* o, void* v) {
 void ImpressionistUI::cb_toggle_cliping_button(Fl_Widget* o, void* v) {
 	((ImpressionistUI*)(o->user_data()))->m_nEnableEdgeClipping = !((ImpressionistUI*)(o->user_data()))->m_nEnableEdgeClipping;
 }
+void ImpressionistUI::cb_load_edge_image(Fl_Menu_* o, void* v) {
+	ImpressionistDoc *pDoc = whoami(o)->getDocument();
+
+	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
+	if (newfile != NULL) {
+		pDoc->loadEdgeImage(newfile);
+	}
+}
 //------------------------------------------------
 // switch image in the originView window
 //------------------------------------------------
@@ -605,8 +617,31 @@ void ImpressionistUI::cb_switch_view_type(Fl_Menu_* o, void* v) {
 
 	pUI->m_origView->refresh();
 }
+//------------------------------------------------
+// another image related function
+//------------------------------------------------
+void ImpressionistUI::cb_load_another_image(Fl_Menu_* o, void* v) {
+	ImpressionistDoc *pDoc = whoami(o)->getDocument();
 
+	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
+	if (newfile != NULL) {
+		pDoc->loadAnotherImage(newfile);
+	}
+}
+void ImpressionistUI::cb_another_gradient_button(Fl_Widget* o, void* v) {
+	ImpressionistUI* pUI = ((ImpressionistUI*)(o->user_data()));
+	pUI->m_nAnotherGradient = !pUI->m_nAnotherGradient;
+	if (pUI->m_pDoc->m_ucAnotherBitmap) {
+		cout << "true";
+		if (pUI->m_nAnotherGradient) {
+			pUI->m_nBrushDirectionTypeCatche = pUI->m_pDoc->m_pControlType;
+			pUI->m_pDoc->m_pControlType = ANOTHER_IMAGE_GRADIENT;
+		}
+		else
+			pUI->m_pDoc->m_pControlType = pUI->m_nBrushDirectionTypeCatche;
 
+	}
+}
 
 //---------------------------------- per instance functions --------------------------------------
 
@@ -733,14 +768,16 @@ bool ImpressionistUI::getEnableEdgeCliping() {
 	return m_nEnableEdgeClipping;
 }
 
+bool ImpressionistUI::getAnotherGradient() {
+	return m_nAnotherGradient;
+}
+
 // Main menu definition
 Fl_Menu_Item ImpressionistUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
 		{ "&Load Image...",	FL_ALT + 'l', (Fl_Callback *)ImpressionistUI::cb_load_image },
-		//todo
-		{ "&Load Edge Image...",	FL_ALT + 'l', (Fl_Callback *)ImpressionistUI::cb_load_image },
-		//todo
-		{ "&Load Another Image...",	FL_ALT + 'l', (Fl_Callback *)ImpressionistUI::cb_load_image },
+		{ "&Load Edge Image...",	FL_ALT + 'l', (Fl_Callback *)ImpressionistUI::cb_load_edge_image },
+		{ "&Load Another Image...",	FL_ALT + '3', (Fl_Callback *)ImpressionistUI::cb_load_another_image },
 		{ "&Save Image...",	FL_ALT + 's', (Fl_Callback *)ImpressionistUI::cb_save_image },
 		{ "&Dissolve Image...",	FL_ALT + 'd', (Fl_Callback *)ImpressionistUI::cb_dissolve_image },
 		{ "&New Mural Image...",	FL_ALT + 'm', (Fl_Callback *)ImpressionistUI::cb_mural_image },
@@ -893,6 +930,7 @@ ImpressionistUI::ImpressionistUI() {
 	m_nSpacing = 1;
 	m_nThreshold = 150;
 	m_nEnableEdgeClipping = false;
+	m_nAnotherGradient = false;
 	// brush dialog definition
 	m_brushDialog = new Fl_Window(390, 300, "Brush Dialog");
 		// Add a brush type choice to the dialog
@@ -970,11 +1008,11 @@ ImpressionistUI::ImpressionistUI() {
 		m_EdgeClipingButton->user_data((void*)(this));
 		m_EdgeClipingButton->callback(cb_toggle_cliping_button);
 		m_EdgeClipingButton->value(m_nEnableEdgeClipping);
-		//todo
+
 		m_AnotherGradientButton = new Fl_Light_Button(230, 200, 150, 25, "&Another Gradient");
 		m_AnotherGradientButton->user_data((void*)(this));
-		m_AnotherGradientButton->callback(cb_Rand_Attr_button);
-		m_AnotherGradientButton->value(m_nRandomAttr);
+		m_AnotherGradientButton->callback(cb_another_gradient_button);
+		m_AnotherGradientButton->value(m_nAnotherGradient);
 
 		m_AutoPaintSpacingSlider = new Fl_Value_Slider(10, 235, 150, 20, "Spacing");
 		m_AutoPaintSpacingSlider->user_data((void*)(this));	// record self to be used by static callback functions
@@ -1002,6 +1040,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_LineAngleSlider->deactivate();
 		m_EdgeClipingButton->deactivate();
 		m_AnotherGradientButton->deactivate();
+		m_BrushTypeChoice->deactivate();
 
 		m_ThresholdSlider = new Fl_Value_Slider(10, 265, 200, 20, "Edge Threshold");
 		m_ThresholdSlider->user_data((void*)(this));	// record self to be used by static callback functions
