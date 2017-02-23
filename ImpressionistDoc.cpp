@@ -40,6 +40,14 @@ ImpressionistDoc::ImpressionistDoc()
 	m_ucDissolve = NULL;
 	m_ucAlphamap = NULL;
 	m_ucBackup = NULL;
+	m_ucEdgeBitmap = NULL;
+	m_ucGrayScaleMap = NULL;
+	m_ucGradientMap = NULL;//attention: this variable is float* type!not unsigned char* type
+	m_ucAnotherBitmap = NULL;
+	m_ucEdgePositionMap = NULL;//the type of this variable is bool* !!!
+	m_ucAnotherGradientMap = NULL;
+
+
 	// create one instance of each brush
 	ImpBrush::c_nBrushCount	= NUM_BRUSH_TYPE;
 	ImpBrush::c_pBrushes	= new ImpBrush* [ImpBrush::c_nBrushCount];
@@ -70,6 +78,17 @@ ImpressionistDoc::ImpressionistDoc()
 	// make one of the brushes current
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[0];
 
+	sobelVertical[0] = -1; sobelVertical[1] = 0; sobelVertical[2] = 1;
+	sobelVertical[3] = -2; sobelVertical[4] = 0; sobelVertical[5] = 2;
+	sobelVertical[6] = -1; sobelVertical[7] = 0; sobelVertical[8] = 1;
+
+	sobelHorizontal[0] = -1; sobelHorizontal[1] = -2; sobelHorizontal[2] = -1;
+	sobelHorizontal[3] = 0; sobelHorizontal[4] = 0; sobelHorizontal[5] = 0;
+	sobelHorizontal[6] = 1; sobelHorizontal[7] = 2; sobelHorizontal[8] = 1;
+
+	gaussianFilter[0] = 0.0625; gaussianFilter[1] = 0.125; gaussianFilter[2] = 0.0625;
+	gaussianFilter[3] = 0.125; gaussianFilter[4] = 0.25; gaussianFilter[5] = 0.125;
+	gaussianFilter[6] = 0.0625; gaussianFilter[7] = 0.125; gaussianFilter[8] = 0.0625;
 }
 
 
@@ -150,11 +169,22 @@ int ImpressionistDoc::loadImage(char *iname)
 	m_nHeight		= height;
 	m_nPaintHeight	= height;
 
+
 	// release old storage
 	if ( m_ucBitmap ) delete [] m_ucBitmap;
 	if ( m_ucPainting ) delete [] m_ucPainting;
 	if (m_ucBitmapOrigin)delete[] m_ucBitmapOrigin;
 	if (m_ucBackup)delete[]m_ucBackup;
+	if (m_ucGrayScaleMap)delete[]m_ucGrayScaleMap;
+	if (m_ucAnotherBitmap)delete[]m_ucAnotherBitmap;
+	m_ucAnotherBitmap = NULL;
+	if (m_ucAnotherGradientMap)delete[]m_ucAnotherGradientMap;
+	m_ucAnotherGradientMap = NULL;
+	if (m_ucEdgeBitmap)delete[]m_ucEdgeBitmap;
+	m_ucEdgeBitmap = NULL;
+	if (m_ucEdgePositionMap)delete[]m_ucEdgePositionMap;
+	m_ucEdgePositionMap = NULL;
+	
 
 	m_ucBitmapOrigin = new unsigned char[width*height * 3];
 	memcpy(m_ucBitmapOrigin, data, width*height * 3);
@@ -166,6 +196,7 @@ int ImpressionistDoc::loadImage(char *iname)
 	memset(m_ucPainting, 0, width*height*4);
 	memset(m_ucBackup, 0, width*height * 4);
 	
+	m_pUI->m_origView->setViewType(ORIGIN_IMAGE);
 	/*set alpha value to 1
 	if (m_nWidth > 0 && m_nHeight > 0)
 		for (int i = 0; i < m_nWidth * m_nHeight; ++i){
@@ -192,6 +223,168 @@ int ImpressionistDoc::loadImage(char *iname)
 		history.pop();
 	}
 	
+
+	//calculate grayscaleMap and gradient map
+	m_ucGrayScaleMap = new unsigned char[width*height];
+	for (int i = 0; i < width*height; i++)
+		m_ucGrayScaleMap[i] = (m_ucBitmap[i * 3] + m_ucBitmap[i * 3 + 1] + m_ucBitmap[i * 3 + 2]) / 3;
+	
+	m_ucGradientMap = new float[width*height];
+	for (int i = 0; i < width*height; i++) 
+		m_ucGradientMap[i] = applySobel(i / width, i % width, false, m_ucGrayScaleMap);
+		
+	
+	return 1;
+}
+//---------------------------------------------------------
+// Load the specified image
+// This is called by the UI when the load another image button is 
+// pressed.
+//---------------------------------------------------------
+int ImpressionistDoc::loadAnotherImage(char *iname) {
+	// try to open the image to read
+	unsigned char*	data;
+	int				width,
+					height;
+
+	if (!m_ucBitmap) {
+		fl_alert("You must load a bitmap to canvas first!");
+		return 0;
+	}
+
+	if ((data = readBMP(iname, width, height)) == NULL)
+	{
+		fl_alert("Can't load bitmap file");
+		return 0;
+	}
+
+	if (width != m_nWidth || height != m_nHeight) {
+		fl_alert("The size are different");
+		return 0;
+	}
+
+	if (m_ucAnotherBitmap)delete[] m_ucAnotherBitmap;
+	if (m_ucAnotherGradientMap)delete[] m_ucAnotherGradientMap;
+
+	m_ucAnotherBitmap = data;
+	m_ucAnotherGradientMap = new  float[width*height];
+
+	//apply gaussian filter
+	unsigned char* temp1 = new unsigned char[width*height * 3];
+	memcpy(temp1, m_ucAnotherBitmap, width*height * 3);
+	//applyGaussianFilter(temp1, m_ucAnotherBitmap, width, height);
+	delete[]temp1;
+
+	unsigned char* temp2 = new unsigned char[width*height];
+	for (int i = 0; i < width*height; i++)
+		temp2[i] = m_ucAnotherBitmap[i * 3] * 0.299 + m_ucAnotherBitmap[i * 3 + 1]*0.587 + m_ucAnotherBitmap[i * 3 + 2] * 0.144;
+
+	for (int i = 0; i < width*height; i++) {
+		int row = i / width;
+		int col = i % width;
+		m_ucAnotherGradientMap[i] = applySobel(row, col,true, temp2);
+	}
+	//applyFilter(int row, int col,int kernelWidth,int kernelHeight,float*kernel,float* rgb,unsigned char* painting)
+	delete[]temp2;
+	
+
+	// display it on origView
+	m_pUI->m_origView->resizeWindow(width, height);
+	m_pUI->m_origView->refresh();
+
+
+
+	return 1;
+}
+
+int ImpressionistDoc::loadEdgeImage(char *iname) {
+
+	// try to open the image to read
+	unsigned char*	data;
+	int				width,
+		height;
+
+	if (!m_ucBitmap) {
+		fl_alert("You must load a bitmap to canvas first!");
+		return 0;
+	}
+
+	if ((data = readBMP(iname, width, height)) == NULL)
+	{
+		fl_alert("Can't load bitmap file");
+		return 0;
+	}
+
+	if (width != m_nWidth || height != m_nHeight) {
+		fl_alert("The size are different");
+		return 0;
+	}
+
+	if (m_ucEdgeBitmap)delete[]m_ucEdgeBitmap;
+	if (m_ucEdgePositionMap)delete[]m_ucEdgePositionMap;
+
+	m_ucEdgeBitmap = data;
+
+
+	
+	m_ucEdgePositionMap = new bool[width*height];
+	memset(m_ucEdgePositionMap, 0, width*height);
+	for (int i = 0; i < width*height; i++) {
+		if (m_ucEdgeBitmap[3 * i] + m_ucEdgeBitmap[3 * i + 1] + m_ucEdgeBitmap[3 * i + 1] != 0)
+			m_ucEdgePositionMap[i] = true;
+	}
+
+
+	// display it on origView
+	m_pUI->m_origView->resizeWindow(width, height);
+	m_pUI->m_origView->refresh();
+
+	return 1;
+}
+//----------------------------------------------------------------
+// Add a "mural" effect 
+// This is called by the UI when the New Mural Image menu button is 
+// pressed.
+//----------------------------------------------------------------
+int ImpressionistDoc::muralImage(char *iname) {
+	// try to open the image to read
+	unsigned char*	data;
+	int				width,
+		height;
+
+	if (!m_ucBitmap) {
+		fl_alert("You must load a bitmap to canvas first!");
+		return 0;
+	}
+
+	if ((data = readBMP(iname, width, height)) == NULL)
+	{
+		fl_alert("Can't load bitmap file");
+		return 0;
+	}
+
+	if (width != m_nWidth || height != m_nHeight) {
+		fl_alert("The size are different");
+		return 0;
+	}
+
+	
+
+	// release old storage
+	if (m_ucBitmapOrigin)delete[] m_ucBitmapOrigin;
+	if (m_ucBitmap)delete[] m_ucBitmap;
+	
+	m_ucBitmap = data;
+
+	m_ucBitmapOrigin = new unsigned char[width*height * 3];
+	memcpy(m_ucBitmapOrigin, m_ucBitmap, width*height * 3);
+
+	// display it on origView
+	m_pUI->m_origView->resizeWindow(width, height);
+	m_pUI->m_origView->refresh();
+
+	
+
 	return 1;
 }
 //---------------------------------------------------------
@@ -244,52 +437,7 @@ int	ImpressionistDoc::dissolveImage(char *iname) {
 
 	return 1;
 }
-//----------------------------------------------------------------
-// Add a "mural" effect 
-// This is called by the UI when the New Mural Image menu button is 
-// pressed.
-//----------------------------------------------------------------
-int ImpressionistDoc::muralImage(char *iname) {
-	// try to open the image to read
-	unsigned char*	data;
-	int				width,
-		height;
 
-	if (!m_ucBitmap) {
-		fl_alert("You must load a bitmap to canvas first!");
-		return 0;
-	}
-
-	if ((data = readBMP(iname, width, height)) == NULL)
-	{
-		fl_alert("Can't load bitmap file");
-		return 0;
-	}
-
-	if (width != m_nWidth || height != m_nHeight) {
-		fl_alert("The size are different");
-		return 0;
-	}
-
-	
-
-	// release old storage
-	if (m_ucBitmapOrigin)delete[] m_ucBitmapOrigin;
-	if (m_ucBitmap)delete[] m_ucBitmap;
-	
-	m_ucBitmap = data;
-
-	m_ucBitmapOrigin = new unsigned char[width*height * 3];
-	memcpy(m_ucBitmapOrigin, m_ucBitmap, width*height * 3);
-
-	// display it on origView
-	m_pUI->m_origView->resizeWindow(width, height);
-	m_pUI->m_origView->refresh();
-
-	
-
-	return 1;
-}
 
 int ImpressionistDoc::alphaMapBrush(char *iname) {
 	// try to open the image to read
@@ -434,6 +582,7 @@ void ImpressionistDoc::applyKernelFilter() {
 		delete[]rgb;
 	}
 	m_pUI->m_paintView->refresh();
+	m_pCurrentBrush->saveState();
 }
 
 void ImpressionistDoc::applyFilter(int row, int col,int kernelWidth,int kernelHeight,float*kernel,float* rgb,unsigned char* painting) {
@@ -495,4 +644,106 @@ void ImpressionistDoc::applyFilter(int row, int col,int kernelWidth,int kernelHe
 		rgb[color] = result;
 	}
 
+}
+
+float ImpressionistDoc::applySobel(int row, int col,bool calculateGradient,const unsigned char* source) {
+
+	float gradient = 0;
+	int Gx = 0;
+	int Gy = 0.0;
+	/*
+	for (int Y = -1; Y < 2; Y++) {
+		for (int X = -1; X < 2; X++) {
+			
+			int x, y;
+			//special contidion
+			if (col + X >= m_nWidth)
+				x = m_nWidth * 2 - (col + X) - 1;
+			else
+				x = abs(col + X);
+
+			if (row + Y >= m_nHeight)
+				y = m_nHeight * 2 - (row + Y) - 1;
+			else
+				y = abs(row + Y);
+
+			int mapPosition = y * m_nWidth + x;
+			int filterPosition = (Y + 1) * 3 + X + 1;
+			
+			Gx += source[mapPosition] * sobelVertical[filterPosition];
+			Gy += source[mapPosition] * sobelHorizontal[filterPosition];
+		}
+	}
+	*/
+
+	Gx = -source[(row - 1)*m_nWidth + col - 1] + source[(row - 1)*m_nWidth + col + 1] - 2 * source[(row)*m_nWidth + col - 1] + 2 * source[(row)*m_nWidth + col + 1] - source[(row + 1)*m_nWidth + col - 1] + source[(row + 1)*m_nWidth + col + 1];
+	Gy = -source[(row - 1)*m_nWidth + col - 1] + source[(row + 1)*m_nWidth + col - 1] - 2 * source[(row - 1)*m_nWidth + col] + 2 * source[(row + 1)*m_nWidth + col] - source[(row - 1)*m_nWidth + col + 1] + source[(row + 1)*m_nWidth + col + 1];
+	if (calculateGradient) {
+		if (Gx == 0)
+			return 90;
+		else {
+			//cout << Gx << ",";
+			return atan((double)Gy / Gx);
+			
+		}
+	}
+	gradient = sqrt(Gx * Gx + Gy * Gy);
+	//cout << gradient << ",";
+	return gradient;
+}
+
+void ImpressionistDoc::generateEdgeImage() {
+
+	int threshold = m_pUI->getThreshold();
+	if (m_ucEdgeBitmap)delete[]m_ucEdgeBitmap;
+	if (m_ucEdgePositionMap)delete[]m_ucEdgePositionMap;
+	m_ucEdgeBitmap = new unsigned char[m_nHeight*m_nWidth * 3];
+	m_ucEdgePositionMap = new bool[m_nHeight*m_nWidth];
+	memset(m_ucEdgeBitmap, 0, m_nHeight*m_nWidth * 3);
+	memset(m_ucEdgePositionMap, 0, m_nHeight*m_nWidth);
+
+	for (int i = 0; i < m_nHeight*m_nWidth; i++) {
+		if (m_ucGradientMap[i] >= threshold) {
+			m_ucEdgeBitmap[i * 3] = 255;
+			m_ucEdgeBitmap[i * 3 + 1] = 255;
+			m_ucEdgeBitmap[i * 3 + 2] = 255;
+			m_ucEdgePositionMap[i] = true;
+		}
+	}
+
+	m_pUI->m_origView->setViewType(EDGE_IMAGE);
+	m_pUI->m_origView->refresh();
+
+}
+
+
+void ImpressionistDoc::applyGaussianFilter(unsigned char* source, unsigned char* target,int width,int height) {
+
+	for (int i = 0; i < width*height; i++) {
+		int x = i % width;
+		int y = i / width;
+		float rgb[3] = { 0,0,0 };
+		for (int Y = -1; Y < 2; Y++) {
+			for (int X = -1; X < 2; X++) {
+				int x0, y0;
+				if (x + X >= width)
+					x0 = width * 2 - (x + X) - 1;
+				else
+					x0 = abs(x + X);
+				if (y + Y >= height)
+					y0 = height * 2 - (y + Y) - 1;
+				else
+					y0 = abs(y + Y);
+
+				int mapPosition = (y0 * width + x0) * 3;
+				int filterPosition = (Y + 1) * 3 + (X + 1);
+				rgb[0] += source[mapPosition] * gaussianFilter[filterPosition];
+				rgb[1] += source[mapPosition + 1] * gaussianFilter[filterPosition];
+				rgb[2] += source[mapPosition + 2] * gaussianFilter[filterPosition];
+			}
+		}
+		target[i * 3] = rgb[0];
+		target[i * 3 + 1] = rgb[1];
+		target[i * 3 + 2] = rgb[2];
+	}
 }

@@ -8,7 +8,7 @@
 #include "impressionistDoc.h"
 #include "originalview.h"
 #include<iostream>
-
+#include <FL/fl_ask.h>
 
 #ifndef WIN32
 #define min(a, b)	( ( (a)<(b) ) ? (a) : (b) )
@@ -23,7 +23,7 @@ OriginalView::OriginalView(int			x,
 {
 	m_nWindowWidth	= w;
 	m_nWindowHeight	= h;
-
+	viewType = ORIGIN_IMAGE;
 }
 
 void OriginalView::draw()
@@ -54,7 +54,10 @@ void OriginalView::draw()
 		m_nWindowHeight=h();
 		
 		int drawWidth, drawHeight;
-		GLvoid* bitstart;
+		GLvoid* originBitstart;
+		GLvoid* edgeBitstart;
+		GLvoid* anotherBitstart;
+		
 
 		// we are not using a scrollable window, so ignore it
 		Point scrollpos;	// = GetScrollPosition();
@@ -68,15 +71,28 @@ void OriginalView::draw()
 			startrow = 0;
 
 
-		bitstart = m_pDoc->m_ucBitmap + 3 * ((m_pDoc->m_nWidth * startrow) + scrollpos.x);
-
-		// just copy image to GLwindow conceptually
-		glRasterPos2i( 0, m_nWindowHeight - drawHeight );
-		glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-		glPixelStorei( GL_UNPACK_ROW_LENGTH, m_pDoc->m_nWidth );
-		glDrawBuffer( GL_BACK );
-		glDrawPixels( drawWidth, drawHeight, GL_RGB, GL_UNSIGNED_BYTE, bitstart );
-
+		originBitstart = m_pDoc->m_ucBitmap + 3 * ((m_pDoc->m_nWidth * startrow) + scrollpos.x);
+		edgeBitstart = m_pDoc->m_ucEdgeBitmap + 3 * ((m_pDoc->m_nWidth * startrow) + scrollpos.x);
+		anotherBitstart = m_pDoc->m_ucAnotherBitmap + 3 * ((m_pDoc->m_nWidth * startrow) + scrollpos.x);
+		glRasterPos2i(0, m_nWindowHeight - drawHeight);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, m_pDoc->m_nWidth);
+		glDrawBuffer(GL_BACK);
+		switch (viewType) {
+		case ORIGIN_IMAGE:
+			// just copy image to GLwindow conceptually
+			glDrawPixels(drawWidth, drawHeight, GL_RGB, GL_UNSIGNED_BYTE, originBitstart);
+			break;
+		case EDGE_IMAGE:
+			glDrawPixels(drawWidth, drawHeight, GL_RGB, GL_UNSIGNED_BYTE, edgeBitstart);
+			break;
+		case ANOTHER_IMAGE:
+			glDrawPixels(drawWidth, drawHeight, GL_RGB, GL_UNSIGNED_BYTE, anotherBitstart);
+			break;
+		default:
+			fl_alert("Unknown error");
+			return;
+		}
 		if(cursor.x<= drawWidth && cursor.y<= drawHeight&&cursor.x>=0&&cursor.y>=0)
 			drawCursor();
 	}
@@ -108,4 +124,12 @@ void OriginalView::drawCursor() {
 	glColor3ub(255, 0, 0);
 	glVertex2d(cursor.x, m_nWindowHeight - cursor.y);
 	glEnd();
+}
+
+void OriginalView::setViewType(int type) {
+	viewType = type;
+}
+
+int OriginalView::getViewType() {
+	return viewType;
 }
