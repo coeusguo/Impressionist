@@ -92,8 +92,8 @@ void LineBrush::BrushMove(const Point source, const Point target)
 	}
 	case CURSOR:
 	{
-		int xDifference = target.x - source.x;
-		int yDifference = target.y - source.y;
+		int xDifference = target.x - lastPoint.x;
+		int yDifference = target.y - lastPoint.y;
 
 		if (xDifference == 0)
 		{
@@ -102,6 +102,7 @@ void LineBrush::BrushMove(const Point source, const Point target)
 		else
 		{
 			angle = (int)((atan2(yDifference, xDifference) * 180 / M_PI) + 360) % 360;
+			//pDoc->setLineAngle(angle);
 		}
 
 		break;
