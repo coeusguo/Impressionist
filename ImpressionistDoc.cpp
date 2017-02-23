@@ -22,6 +22,7 @@
 #include "GrayBrush.h"
 #include "SharpenBrush.h"
 #include "BlurBrush.h"
+#include "Warp.h"
 #include "AlphaMapBrush.h"
 #include <iostream>
 
@@ -72,6 +73,8 @@ ImpressionistDoc::ImpressionistDoc()
 		= new SharpenBrush(this, "Sharpen Points");
 	ImpBrush::c_pBrushes[BRUSH_BLUR_POINTS]
 		= new BlurBrush(this, "Blur Points");
+	ImpBrush::c_pBrushes[WARP_IMAGE]
+		= new Warp(this, "Warp Image");
 	ImpBrush::c_pBrushes[BRUSH_ALPHA_MAP]
 		= new AlphaMapBrush(this,"Alpha Map");
 

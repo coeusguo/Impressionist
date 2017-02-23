@@ -156,6 +156,7 @@
     <ClCompile Include="ScatterLine.cpp" />
     <ClCompile Include="ScatterPoint.cpp" />
     <ClCompile Include="SharpenBrush.cpp" />
+    <ClCompile Include="Warp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlphaMapBrush.h" />
@@ -175,6 +176,7 @@
     <ClInclude Include="ScatterLine.h" />
     <ClInclude Include="ScatterPoint.h" />
     <ClInclude Include="SharpenBrush.h" />
+    <ClInclude Include="Warp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

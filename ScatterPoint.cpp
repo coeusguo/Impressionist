@@ -37,7 +37,7 @@ void ScatterPoint::BrushMove(const Point source, const Point target)
 
 
 	int offset = pDoc->getSize();
-	float Pi = 3.1415926;
+	//float Pi = 3.1415926;
 
 	for (int i = 0; i < 0.3* offset*offset; i++) {
 		int x = target.x + rand() % offset - 0.5 * offset;
@@ -46,7 +46,6 @@ void ScatterPoint::BrushMove(const Point source, const Point target)
 		Point ScatterCenter = Point(x, y);
 		glPointSize((float)unitSize);
 		PointBrush::BrushMove(ScatterCenter, ScatterCenter);
-
 	}
 	if (pDoc == NULL) {
 		printf("Scatter Circles::BrushMove  document is NULL\n");

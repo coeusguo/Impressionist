@@ -21,6 +21,7 @@ enum
 	BRUSH_GRAY_POINTS,
 	BRUSH_SHARPEN_POINTS,
 	BRUSH_BLUR_POINTS,
+	WARP_IMAGE,
 	BRUSH_ALPHA_MAP,
 	NUM_BRUSH_TYPE // Make sure this stays at the end!
 };

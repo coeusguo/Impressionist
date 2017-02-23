@@ -26,6 +26,7 @@ void LineBrush::BrushBegin(const Point source, const Point target)
 		lastPoint.x = source.x;
 		lastPoint.y = source.y;
 	}
+
 	ImpressionistDoc* pDoc = GetDocument();
 	ImpressionistUI* dlg = pDoc->m_pUI;
 	if (!dlg->getEnableAutoDraw())
@@ -65,15 +66,21 @@ void LineBrush::BrushMove(const Point source, const Point target)
 		};
 
 		// calculate vector
-		int pixels[3][3];
-		int gx = 0;
-		int gy = 0;
+		double pixels[3][3];
+		/*double gaussian[3][3] = {
+			{0.0625, 0.125, 0.0625},
+			{0.125, 0.25, 0.125},
+			{0.0625, 0.125, 0.0625}
+		};*/
+		double gx = 0;
+		double gy = 0;
 		for (int r = 0; r < 3; r++)
 		{
 			for (int c = 0; c < 3; c++)
 			{
 				// get the original pixel
-				pixels[r][c] = *(pDoc->GetOriginalPixel(target.x + r - 1, target.y + c - 1));
+				pixels[r][c] = *(pDoc->GetOriginalPixel(source.x + r - 1, source.y + c - 1));
+				//pixels[r][c] *= gaussian[r][c];
 				// calculate Gx and Gy
 				gx += pixels[r][c] * sobelX[r][c];
 				gy += pixels[r][c] * sobelY[r][c];
@@ -102,7 +109,7 @@ void LineBrush::BrushMove(const Point source, const Point target)
 		else
 		{
 			angle = (int)((atan2(yDifference, xDifference) * 180 / M_PI) + 360) % 360;
-			//pDoc->setLineAngle(angle);
+			pDoc->setLineAngle(angle);
 		}
 
 		break;
@@ -113,6 +120,10 @@ void LineBrush::BrushMove(const Point source, const Point target)
 	default:
 		break;
 	}
+
+	lastPoint.x = target.x;
+	lastPoint.y = target.y;
+
 	int size = pDoc->getSize();
 	if(pDoc->m_pControlType != ANOTHER_IMAGE_GRADIENT)
 		radian = (angle / 360.00)*twoPi;
