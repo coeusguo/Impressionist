@@ -52,7 +52,8 @@ void LineBrush::BrushMove(const Point source, const Point target)
 		break;
 	case GRADIENT:
 	{ // need {} to instantiate variables that will only be used inside this case
-		// instantiate sobel operators
+		
+	  // instantiate sobel operators
 		int sobelX[3][3] = {
 			{-1, 0, 1},
 			{-2, 0, 2},
@@ -79,14 +80,22 @@ void LineBrush::BrushMove(const Point source, const Point target)
 				gy += pixels[r][c] * sobelY[r][c];
 			}
 		}
-
+		
+		/*
+		int position = (source.y*pDoc->m_nWidth + source.x)*2;
+		int gx, gy;
+		gx = pDoc->m_ucGradientXYmap[position];
+		gy = pDoc->m_ucGradientXYmap[position + 1];
+		*/
 		if (gx == 0) // since arctan would be undefined
 		{
-			angle = 90;
+			//angle = 180;
+			radian = M_PI/2;
 		}
 		else
 		{
-			angle = (int)((atan2(gy, gx) * 180 / M_PI) + 360) % 360;
+			//angle = (int)((atan2(gy, gx) * 180 / M_PI) + 360 + 90) % 360 ;
+			radian = atan((float)gy / gx);//+ M_PI/2;
 		}
 		break;
 	}
@@ -113,7 +122,7 @@ void LineBrush::BrushMove(const Point source, const Point target)
 		break;
 	}
 	int size = pDoc->getSize();
-	if(pDoc->m_pControlType != ANOTHER_IMAGE_GRADIENT)
+	if(pDoc->m_pControlType != ANOTHER_IMAGE_GRADIENT && pDoc->m_pControlType != GRADIENT)
 		radian = (angle / 360.00)*twoPi;
 	
 	

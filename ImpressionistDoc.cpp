@@ -46,6 +46,7 @@ ImpressionistDoc::ImpressionistDoc()
 	m_ucAnotherBitmap = NULL;
 	m_ucEdgePositionMap = NULL;//the type of this variable is bool* !!!
 	m_ucAnotherGradientMap = NULL;
+	m_ucGradientXYmap = NULL;//store the Gx and Gy in each pixel of m_ucBitmap
 
 
 	// create one instance of each brush
@@ -176,6 +177,7 @@ int ImpressionistDoc::loadImage(char *iname)
 	if (m_ucBitmapOrigin)delete[] m_ucBitmapOrigin;
 	if (m_ucBackup)delete[]m_ucBackup;
 	if (m_ucGrayScaleMap)delete[]m_ucGrayScaleMap;
+	if (m_ucGradientXYmap)delete[]m_ucGradientXYmap;
 	if (m_ucAnotherBitmap)delete[]m_ucAnotherBitmap;
 	m_ucAnotherBitmap = NULL;
 	if (m_ucAnotherGradientMap)delete[]m_ucAnotherGradientMap;
@@ -190,6 +192,8 @@ int ImpressionistDoc::loadImage(char *iname)
 	memcpy(m_ucBitmapOrigin, data, width*height * 3);
 	m_ucBitmap		= data;
 	
+	m_ucGradientXYmap = new int[width*height * 2];
+
 	// allocate space for draw view
 	m_ucPainting	= new unsigned char [width*height*4];
 	m_ucBackup = new unsigned char[width*height * 4];
@@ -230,8 +234,13 @@ int ImpressionistDoc::loadImage(char *iname)
 		m_ucGrayScaleMap[i] = (m_ucBitmap[i * 3] + m_ucBitmap[i * 3 + 1] + m_ucBitmap[i * 3 + 2]) / 3;
 	
 	m_ucGradientMap = new float[width*height];
-	for (int i = 0; i < width*height; i++) 
-		m_ucGradientMap[i] = applySobel(i / width, i % width, false, m_ucGrayScaleMap);
+	for (int i = 0; i < width*height; i++) {
+		int* xy = applySobel(i / width, i % width, m_ucGrayScaleMap);
+		m_ucGradientMap[i] = sqrt(xy[0] * xy[0] + xy[1] * xy[1]);
+		m_ucGradientXYmap[i * 2] = xy[0];
+		m_ucGradientXYmap[i * 2 + 1] = xy[1];
+		delete[]xy;
+	}
 		
 	
 	return 1;
@@ -270,10 +279,10 @@ int ImpressionistDoc::loadAnotherImage(char *iname) {
 	m_ucAnotherGradientMap = new  float[width*height];
 
 	//apply gaussian filter
-	unsigned char* temp1 = new unsigned char[width*height * 3];
-	memcpy(temp1, m_ucAnotherBitmap, width*height * 3);
+	//unsigned char* temp1 = new unsigned char[width*height * 3];
+	//memcpy(temp1, m_ucAnotherBitmap, width*height * 3);
 	//applyGaussianFilter(temp1, m_ucAnotherBitmap, width, height);
-	delete[]temp1;
+	//delete[]temp1;
 
 	unsigned char* temp2 = new unsigned char[width*height];
 	for (int i = 0; i < width*height; i++)
@@ -282,7 +291,10 @@ int ImpressionistDoc::loadAnotherImage(char *iname) {
 	for (int i = 0; i < width*height; i++) {
 		int row = i / width;
 		int col = i % width;
-		m_ucAnotherGradientMap[i] = applySobel(row, col,true, temp2);
+		int* xy;
+		xy = applySobel(row, col, temp2);
+		m_ucAnotherGradientMap[i] = atan((float)xy[1] / xy[0]) + M_PI/2;
+		delete[]xy;
 	}
 	//applyFilter(int row, int col,int kernelWidth,int kernelHeight,float*kernel,float* rgb,unsigned char* painting)
 	delete[]temp2;
@@ -646,11 +658,10 @@ void ImpressionistDoc::applyFilter(int row, int col,int kernelWidth,int kernelHe
 
 }
 
-float ImpressionistDoc::applySobel(int row, int col,bool calculateGradient,const unsigned char* source) {
+int* ImpressionistDoc::applySobel(int row, int col,const unsigned char* source) {
 
-	float gradient = 0;
-	int Gx = 0;
-	int Gy = 0.0;
+	int* xy = new int[2];
+	
 	/*
 	for (int Y = -1; Y < 2; Y++) {
 		for (int X = -1; X < 2; X++) {
@@ -676,20 +687,12 @@ float ImpressionistDoc::applySobel(int row, int col,bool calculateGradient,const
 	}
 	*/
 
-	Gx = -source[(row - 1)*m_nWidth + col - 1] + source[(row - 1)*m_nWidth + col + 1] - 2 * source[(row)*m_nWidth + col - 1] + 2 * source[(row)*m_nWidth + col + 1] - source[(row + 1)*m_nWidth + col - 1] + source[(row + 1)*m_nWidth + col + 1];
-	Gy = -source[(row - 1)*m_nWidth + col - 1] + source[(row + 1)*m_nWidth + col - 1] - 2 * source[(row - 1)*m_nWidth + col] + 2 * source[(row + 1)*m_nWidth + col] - source[(row - 1)*m_nWidth + col + 1] + source[(row + 1)*m_nWidth + col + 1];
-	if (calculateGradient) {
-		if (Gx == 0)
-			return 90;
-		else {
-			//cout << Gx << ",";
-			return atan((double)Gy / Gx);
-			
-		}
-	}
-	gradient = sqrt(Gx * Gx + Gy * Gy);
+	xy[0] = -source[(row - 1)*m_nWidth + col - 1] + source[(row - 1)*m_nWidth + col + 1] - 2 * source[(row)*m_nWidth + col - 1] + 2 * source[(row)*m_nWidth + col + 1] - source[(row + 1)*m_nWidth + col - 1] + source[(row + 1)*m_nWidth + col + 1];
+	xy[1]= -source[(row - 1)*m_nWidth + col - 1] + source[(row + 1)*m_nWidth + col - 1] - 2 * source[(row - 1)*m_nWidth + col] + 2 * source[(row + 1)*m_nWidth + col] - source[(row - 1)*m_nWidth + col + 1] + source[(row + 1)*m_nWidth + col + 1];
+
+	//gradient = sqrt(Gx * Gx + Gy * Gy);
 	//cout << gradient << ",";
-	return gradient;
+	return xy;
 }
 
 void ImpressionistDoc::generateEdgeImage() {
