@@ -122,7 +122,18 @@ void OriginalView::drawCursor() {
 	
 	glBegin(GL_POINTS);
 	glColor3ub(255, 0, 0);
-	glVertex2d(cursor.x, m_nWindowHeight - cursor.y);
+	if (m_pDoc->m_pCurrentBrush == ImpBrush::c_pBrushes[BRUSH_UPSIDE_DOWN])
+	{
+		glVertex2d(m_nWindowWidth - cursor.x, cursor.y);
+	}
+	else if (m_pDoc->m_pCurrentBrush == ImpBrush::c_pBrushes[BRUSH_MIRROR])
+	{
+		glVertex2d(m_nWindowWidth - cursor.x, m_nWindowHeight - cursor.y);
+	}
+	else
+	{
+		glVertex2d(cursor.x, m_nWindowHeight - cursor.y);
+	}
 	glEnd();
 }
 
