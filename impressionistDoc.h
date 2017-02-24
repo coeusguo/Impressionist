@@ -100,6 +100,10 @@ public:
 	GLubyte* GetOriginalPixel( int x, int y );   
 	// Get the color of the original picture at the specified point	
 	GLubyte* GetOriginalPixel( const Point p );  
+	// Get the color of the drawn picture at the specified coord
+	GLubyte* GetDrawnPixel(int x, int y);
+	// Get the color of the drawn picture at the specified point	
+	GLubyte* GetDrawnPixel(const Point p);
 
 	int sobelVertical[9];
 	int sobelHorizontal[9];

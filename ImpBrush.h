@@ -21,6 +21,8 @@ enum
 	BRUSH_GRAY_POINTS,
 	BRUSH_SHARPEN_POINTS,
 	BRUSH_BLUR_POINTS,
+	BRUSH_UPSIDE_DOWN,
+	BRUSH_MIRROR,
 	WARP_IMAGE,
 	BRUSH_ALPHA_MAP,
 	NUM_BRUSH_TYPE // Make sure this stays at the end!
@@ -51,6 +53,7 @@ public:
 
 	// according to the source image and the position, determine the draw color
 	void SetColor( const Point source );
+	void SetColorFromDrawn(const Point source);
 	void saveState();
 	// get Doc to communicate with it
 	ImpressionistDoc* GetDocument( void );

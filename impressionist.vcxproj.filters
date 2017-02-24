@@ -69,6 +69,12 @@
     <ClCompile Include="Warp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UpsideDownBrush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MirrorBrush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bitmap.h">
@@ -123,6 +129,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Warp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UpsideDownBrush.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MirrorBrush.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

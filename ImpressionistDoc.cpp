@@ -22,6 +22,8 @@
 #include "GrayBrush.h"
 #include "SharpenBrush.h"
 #include "BlurBrush.h"
+#include "UpsideDownBrush.h"
+#include "MirrorBrush.h"
 #include "Warp.h"
 #include "AlphaMapBrush.h"
 #include <iostream>
@@ -73,6 +75,10 @@ ImpressionistDoc::ImpressionistDoc()
 		= new SharpenBrush(this, "Sharpen Points");
 	ImpBrush::c_pBrushes[BRUSH_BLUR_POINTS]
 		= new BlurBrush(this, "Blur Points");
+	ImpBrush::c_pBrushes[BRUSH_UPSIDE_DOWN]
+		= new UpsideDownBrush(this, "Upside Down Brush");
+	ImpBrush::c_pBrushes[BRUSH_MIRROR]
+		= new MirrorBrush(this, "Mirror Brush");
 	ImpBrush::c_pBrushes[WARP_IMAGE]
 		= new Warp(this, "Warp Image");
 	ImpBrush::c_pBrushes[BRUSH_ALPHA_MAP]
@@ -526,7 +532,7 @@ GLubyte* ImpressionistDoc::GetOriginalPixel( int x, int y )
 	else if ( y >= m_nHeight ) 
 		y = m_nHeight-1;
 
-	return (GLubyte*)(m_ucBitmap + 3 * (y*m_nWidth + x));
+	return (GLubyte*)(m_ucBitmap + 3 * (y*m_nWidth + x)); //uc paintings + 4
 }
 
 //----------------------------------------------------------------
@@ -535,6 +541,32 @@ GLubyte* ImpressionistDoc::GetOriginalPixel( int x, int y )
 GLubyte* ImpressionistDoc::GetOriginalPixel( const Point p )
 {
 	return GetOriginalPixel( p.x, p.y );
+}
+
+//------------------------------------------------------------------
+// Get the color of the pixel in the drawn image at coord x and y
+//------------------------------------------------------------------
+GLubyte* ImpressionistDoc::GetDrawnPixel(int x, int y)
+{
+	if (x < 0)
+		x = 0;
+	else if (x >= m_nWidth)
+		x = m_nWidth - 1;
+
+	if (y < 0)
+		y = 0;
+	else if (y >= m_nHeight)
+		y = m_nHeight - 1;
+
+	return (GLubyte*)(m_ucPainting + 4 * (y*m_nWidth + x)); //uc paintings + 4
+}
+
+//----------------------------------------------------------------
+// Get the color of the pixel in the drawn image at point p
+//----------------------------------------------------------------
+GLubyte* ImpressionistDoc::GetDrawnPixel(const Point p)
+{
+	return GetDrawnPixel(p.x, p.y);
 }
 
 void ImpressionistDoc::setLineAngle(int lineAngle)

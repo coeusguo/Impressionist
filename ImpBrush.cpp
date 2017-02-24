@@ -55,6 +55,24 @@ void ImpBrush::SetColor (const Point source)
 
 }
 
+//----------------------------------------------------
+// Set the color to paint with to the color at source,
+// which is the coord at the drawn window to sample 
+// the color from
+//----------------------------------------------------
+void ImpBrush::SetColorFromDrawn(const Point source)
+{
+	ImpressionistDoc* pDoc = GetDocument();
+
+
+	GLubyte color[4];
+
+	memcpy(color, pDoc->GetDrawnPixel(source), 3);
+	color[3] = GLubyte(pDoc->getAlpha() * 255);
+	glColor4ubv(color);
+
+}
+
 void ImpBrush::saveState() {
 	unsigned char* currentState = new unsigned char[m_pDoc->m_nWidth*m_pDoc->m_nHeight * 4];
 	memcpy(currentState, m_pDoc->m_ucPainting, m_pDoc->m_nWidth*m_pDoc->m_nHeight * 4);
