@@ -45,7 +45,8 @@ public:
 
 	void autoPaint();
 
-	
+	void painterly(bool isInitialzed);
+
 	ImpressionistDoc *m_pDoc;
 
 private:

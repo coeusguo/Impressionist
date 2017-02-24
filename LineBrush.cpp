@@ -325,7 +325,12 @@ void LineBrush::BrushMove(const Point source, const Point target)
 		//}
 
 	}
-
+	/*glBegin(GL_POLYGON);
+			glVertex2d(centers[i - 1].first.first + radius*normalX[i], centers[i - 1].first.second + radius*normalY[i]);
+			glVertex2d(centers[i].first.first + radius*normalX[i], centers[i].first.second + radius*normalY[i]);
+			glVertex2d(centers[i].first.first - radius*normalX[i], centers[i].first.second - radius*normalY[i]);
+			glVertex2d(centers[i - 1].first.first - radius*normalX[i], centers[i - 1].first.second - radius*normalY[i]);
+			glEnd();*/
 	/*
 	glBegin(GL_LINES);
 	SetColor(source);
@@ -393,3 +398,4 @@ void LineBrush::BrushEnd(const Point source, const Point target)
 char* LineBrush::BrushName(void) {
 	return ImpBrush::BrushName();
 }
+

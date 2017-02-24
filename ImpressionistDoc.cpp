@@ -23,6 +23,7 @@
 #include "SharpenBrush.h"
 #include "BlurBrush.h"
 #include "AlphaMapBrush.h"
+#include "CurveBrush.h"
 #include <iostream>
 
 
@@ -47,7 +48,7 @@ ImpressionistDoc::ImpressionistDoc()
 	m_ucEdgePositionMap = NULL;//the type of this variable is bool* !!!
 	m_ucAnotherGradientMap = NULL;
 	m_ucGradientXYmap = NULL;//store the Gx and Gy in each pixel of m_ucBitmap
-
+	m_ucBitmapBlur = NULL;
 
 	// create one instance of each brush
 	ImpBrush::c_nBrushCount	= NUM_BRUSH_TYPE;
@@ -75,6 +76,8 @@ ImpressionistDoc::ImpressionistDoc()
 		= new BlurBrush(this, "Blur Points");
 	ImpBrush::c_pBrushes[BRUSH_ALPHA_MAP]
 		= new AlphaMapBrush(this,"Alpha Map");
+	ImpBrush::c_pBrushes[BRUSH_CURVE]
+		= new CurveBrush(this, "Curve");
 
 	// make one of the brushes current
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[0];
@@ -179,6 +182,7 @@ int ImpressionistDoc::loadImage(char *iname)
 	if (m_ucGrayScaleMap)delete[]m_ucGrayScaleMap;
 	if (m_ucGradientXYmap)delete[]m_ucGradientXYmap;
 	if (m_ucAnotherBitmap)delete[]m_ucAnotherBitmap;
+	if (m_ucBitmapBlur)delete[]m_ucBitmapBlur;
 	m_ucAnotherBitmap = NULL;
 	if (m_ucAnotherGradientMap)delete[]m_ucAnotherGradientMap;
 	m_ucAnotherGradientMap = NULL;
@@ -213,7 +217,8 @@ int ImpressionistDoc::loadImage(char *iname)
 								m_pUI->m_mainWindow->y(), 
 								width*2, 
 								height+25);
-
+	//testing();
+	//memcpy(m_ucBitmap, m_ucBitmapBlur, width*height * 3);
 	// display it on origView
 	m_pUI->m_origView->resizeWindow(width, height);	
 	m_pUI->m_origView->refresh();
@@ -538,6 +543,7 @@ GLubyte* ImpressionistDoc::GetOriginalPixel( int x, int y )
 	return (GLubyte*)(m_ucBitmap + 3 * (y*m_nWidth + x));
 }
 
+
 //----------------------------------------------------------------
 // Get the color of the pixel in the original image at point p
 //----------------------------------------------------------------
@@ -545,6 +551,7 @@ GLubyte* ImpressionistDoc::GetOriginalPixel( const Point p )
 {
 	return GetOriginalPixel( p.x, p.y );
 }
+
 
 void ImpressionistDoc::setLineAngle(int lineAngle)
 {
@@ -749,4 +756,89 @@ void ImpressionistDoc::applyGaussianFilter(unsigned char* source, unsigned char*
 		target[i * 3 + 1] = rgb[1];
 		target[i * 3 + 2] = rgb[2];
 	}
+}
+
+void ImpressionistDoc::applyPainterlyGaussianFilter(float blurFactor) {
+	
+	if (m_ucBitmapBlur)delete[]m_ucBitmapBlur;
+	m_ucBitmapBlur = new unsigned char[m_nWidth * m_nHeight * 3];
+	memset(m_ucBitmapBlur, 0, m_nWidth * m_nHeight * 3);
+	if (blurFactor == 0) {
+		memcpy(m_ucBitmapBlur, m_ucBitmap, m_nHeight * m_nWidth * 3);
+		return;
+	}
+
+	double kernel[25];
+	for (int i = 0; i < 25; i++){
+		int x = i % 5 - 2;
+		int y = i / 5 - 2;
+		kernel[i] = (1 / (2 * M_PI*blurFactor)) * pow(2.7182818, -(x * x + y * y) / (2 * blurFactor));
+		//cout << kernel[i] << endl;
+	}
+
+	for (int i = 0; i < m_nHeight*m_nWidth; i++) {
+		int x0 = i % m_nWidth;
+		int y0 = i / m_nWidth;
+		int mapPosition = 0;
+		for (int Y = -2; Y < 3; Y++) {
+			for (int X = -2; X < 3; X++) {
+				int x, y;
+				if (x0 + X >= m_nWidth)
+					x = m_nWidth * 2 - (x0 + X) - 1;
+				else
+					x = abs(x0 + X);
+				if (y0 + Y >= m_nHeight)
+					y = m_nHeight * 2 - (y0 + Y) - 1;
+				else
+					y = abs(y0 + Y);
+
+				mapPosition = (y * m_nWidth + x) * 3;
+				int filterPosition = (Y + 2) * 5 + (X + 2);
+
+				m_ucBitmapBlur[mapPosition] += m_ucBitmap[mapPosition] * kernel[filterPosition];
+				m_ucBitmapBlur[mapPosition + 1] += m_ucBitmap[mapPosition + 1] * kernel[filterPosition];
+				m_ucBitmapBlur[mapPosition + 2] += m_ucBitmap[mapPosition + 2] * kernel[filterPosition];
+			}
+		}
+
+		for (int i = 0; i < 3; i++) {
+			if (m_ucBitmapBlur[mapPosition + i] > 255)
+				m_ucBitmapBlur[mapPosition + i] = 255;
+
+			if (m_ucBitmapBlur[mapPosition + i] < 0)
+				m_ucBitmapBlur[mapPosition + i] = 0;
+		}
+	
+	
+	}
+}
+
+
+void ImpressionistDoc::PainterlyStart() {
+	clearCanvas();
+	m_pUI->m_paintView->flush();
+	int r0 = m_pUI->m_nPainterlyR0Level;
+	int layers = m_pUI->m_nPainterlyLayers;
+	//cout << "layers:" <<layers<< endl;
+	m_pUI->m_nPainterlyRun = true;
+	
+	m_pUI->m_nPaintrelyIsInitialized = false;
+	for (int i = 1; i <= layers; i++) {
+		m_pUI->m_nPainterlyBrushSize = pow(2, r0);
+		//cout << "size:" << m_pUI->m_nPainterlyBrushSize << endl;
+		m_pUI->m_paintView->refresh();
+		m_pUI->m_paintView->flush();
+		r0--;
+		if (r0 < 0)
+			break;
+	
+	}
+	
+	m_pUI->m_nPainterlyRun = false;
+}
+
+//unit testing
+void ImpressionistDoc::testing() {
+	applyPainterlyGaussianFilter(0.5);
+
 }

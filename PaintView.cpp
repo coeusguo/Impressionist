@@ -12,7 +12,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-
+using namespace std;
 #define LEFT_MOUSE_DOWN		1
 #define LEFT_MOUSE_DRAG		2
 #define LEFT_MOUSE_UP		3
@@ -182,8 +182,16 @@ void PaintView::draw()
 
 	if (m_pDoc->m_pUI->getEnableAutoDraw()) {
 		autoPaint();
+		
 		m_pDoc->m_pUI->setEnableAutoDraw(false);
 	}
+	//cout <<(int) m_pDoc->m_pUI->m_nPainterlyRun << endl;
+	if (m_pDoc->m_pUI->m_nPainterlyRun) {
+		//cout << "painterly start" << endl;
+		painterly(m_pDoc->m_pUI->m_nPaintrelyIsInitialized);
+		m_pDoc->m_pUI->m_nPaintrelyIsInitialized = true;
+	}
+
 	glFlush();
 
 
@@ -385,11 +393,15 @@ int PaintView::getDrawHeight()const {
 
 void PaintView::autoPaint() {
 	ImpressionistUI* pUI = m_pDoc->m_pUI;
+	m_pDoc->clearCanvas();
 	vector<int> index;
+
+	
 	int spacing = pUI->getSpacing();
 	
 	int height = m_pDoc->m_nHeight;
 	int width = m_pDoc->m_nWidth;
+	
 	ImpBrush* currentBrush = m_pDoc->m_pCurrentBrush;
 
 	//randAttr part
@@ -432,7 +444,7 @@ void PaintView::autoPaint() {
 			pUI->setLineAngle(lineAngle + rand() % 90 - 45);
 			pUI->setLineWidth(lineWidth + rand() % 10 - 5);
 		}
-		currentBrush->BrushBegin(p, p);
+		currentBrush->BrushBegin(p , p);
 		currentBrush->BrushEnd(p, p);
 	}
 
@@ -440,5 +452,115 @@ void PaintView::autoPaint() {
 	pUI->setSize(size);
 	pUI->setLineAngle(lineAngle);
 	pUI->setLineWidth(lineWidth);
+}
+
+void PaintView::painterly(bool isInitialized) {
+	//cout << "hey" << endl;
+	ImpressionistUI* pUI = m_pDoc->m_pUI;
+	ImpressionistDoc* pDoc = pUI->getDocument();
+	int width = pDoc->m_nWidth;
+	int height = pDoc->m_nHeight;
+
+
+	if (!isInitialized) {
+		glBegin(GL_POLYGON);
+		glColor3ub(255, 255, 255);
+		glVertex2i(0,0);
+		glVertex2i(width, 0);
+		glVertex2i(width, height);
+		glVertex2i(0, height);
+		glEnd();
+	}
+	
+	int brushType = pUI->m_nPainterlyCurrentStroke;
+	int threshold = pUI->m_nPainterlyThreshold;
+	float alpha = pUI->m_nPainterlyAlpha;
+	int size = pUI->m_nPainterlyBrushSize;
+	int gridSize = pUI->m_nPainterlyGirdSize * size;
+	
+	if (gridSize < 1)
+		gridSize = 1;
+	ImpBrush* currentBrush = ImpBrush::c_pBrushes[brushType];
+	
+	/*
+	float jr = pUI->m_nPainterlyJr;
+	float jg = pUI->m_nPainterlyJg;
+	float jb = pUI->m_nPainterlyJb;
+
+	*/
+	float blurFactor = pUI->m_nPainterlyBlur;
+	bool isFatorChanged = pUI->m_nPainterlyBlurChanged;
+	
+	if(pUI->m_nPainterlyBlurChanged||pDoc->m_ucBitmapBlur == NULL)
+		pDoc->applyPainterlyGaussianFilter(blurFactor);
+
+
+	unsigned char* canvas = pDoc->m_ucPainting;
+	unsigned char* source = pDoc->m_ucBitmapBlur;
+
+
+	float* differenceMap = new float[width*height];
+
+	for (int i = 0; i < width*height; i++) 
+		differenceMap[i] = sqrt(pow(source[i * 3] - canvas[i * 4], 2) + pow(source[i * 3 + 1] - canvas[i * 4 + 1], 2) + pow(source[i * 3 + 2] - canvas[i * 4 + 2], 2));
+
+	
+	vector<int*> points;
+	for (int Y = gridSize / 2; Y <= height - gridSize / 2; Y += gridSize) {
+		for (int X = gridSize / 2; X <= width - gridSize / 2; X += gridSize) {
+
+			int areaError = 0;
+			for (int y = Y - gridSize / 2; y <= Y + gridSize / 2; y++) {
+				for (int x = X - gridSize / 2; x <= X + gridSize / 2; x++)
+					areaError += differenceMap[y * width + x];
+			}
+
+			areaError /= pow(2 * (gridSize / 2) + 1, 2);
+
+			if (areaError > threshold) {
+				int maxDiff = -1;
+				int* maxPoint = new int[2];
+
+				for (int y = Y - gridSize / 2; y <= Y + gridSize / 2; y++) {
+					for (int x = X - gridSize / 2; x <= X + gridSize / 2; x++) {
+						if (differenceMap[y * width + x] > maxDiff) {
+							maxDiff = differenceMap[y * width + x];
+							maxPoint[0] = x;
+							maxPoint[1] = y;
+
+
+						}
+
+					}
+				}
+
+				points.push_back(maxPoint);
+
+			}
+		}
+	}
+		int initialBrushSize = pDoc->getSize();
+		//cout << points.size() << endl;
+		random_shuffle(points.begin(),points.end());
+		
+		for (int i = 0; i < points.size(); i++) {
+			int* point = points.at(i);
+
+			Point p = Point(point[0], point[1]);
+			pUI->setSize(size);
+			//cout << currentBrush->BrushName();
+			
+			currentBrush->BrushBegin(p, p);
+			currentBrush->BrushEnd(p, p);
+			
+		}
+
+		for (int* n : points)
+			delete[]n;
+		points.clear();
+		pUI->setSize(initialBrushSize);
+		
+		//cout << "finish" << endl;
+	
 }
 

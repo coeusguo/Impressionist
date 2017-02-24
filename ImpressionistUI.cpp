@@ -498,6 +498,7 @@ void ImpressionistUI::cb_Rand_Attr_button(Fl_Widget* o, void* v) {
 }
 void ImpressionistUI::cb_Auto_Paint_button(Fl_Widget* o, void* v) {
 	ImpressionistUI* pUI = ((ImpressionistUI*)(o->user_data()));
+	ImpressionistDoc* pDoc = pUI->getDocument();
 	pUI->m_nEnableAutoDraw = true;
 	pUI->m_paintView->refresh();
 }
@@ -642,12 +643,13 @@ void ImpressionistUI::cb_another_gradient_button(Fl_Widget* o, void* v) {
 
 	}
 }
-
-//painterly
+//------------------------------------------------
+// painterly and curved brush related function
+//------------------------------------------------
 void ImpressionistUI::cb_painterly(Fl_Menu_* o, void* v) {
 	whoami(o)->m_painterlylDialog->show();
 }
-
+/*
 void ImpressionistUI::cb_painterly_Type(Fl_Widget* o, void* v) {
 	ImpressionistUI* pUI = ((ImpressionistUI*)(o->user_data()));
 	int type = (int)v;
@@ -664,12 +666,14 @@ void ImpressionistUI::cb_painterly_Type(Fl_Widget* o, void* v) {
 		pUI->m_painterlyAlpha->activate();
 		pUI->m_painterlyLayers->activate();
 		pUI->m_painterlyR0Level->activate();
+		
 		pUI->m_painterlyJr->activate();
 		pUI->m_painterlyJg->activate();
 		pUI->m_painterlyJb->activate();
 		pUI->m_painterlyJh->activate();
 		pUI->m_painterlyJs->activate();
 		pUI->m_painterlyJv->activate();
+		
 	}
 	else {
 		pUI->m_painterlyStroke->deactivate();
@@ -682,14 +686,17 @@ void ImpressionistUI::cb_painterly_Type(Fl_Widget* o, void* v) {
 		pUI->m_painterlyAlpha->deactivate();
 		pUI->m_painterlyLayers->deactivate();
 		pUI->m_painterlyR0Level->deactivate();
+		
 		pUI->m_painterlyJr->deactivate();
 		pUI->m_painterlyJg->deactivate();
 		pUI->m_painterlyJb->deactivate();
 		pUI->m_painterlyJh->deactivate();
 		pUI->m_painterlyJs->deactivate();
 		pUI->m_painterlyJv->deactivate();
+		
 	}
 }
+*/
 void ImpressionistUI::cb_painterlyStrokeType(Fl_Widget* o, void* v) {
 	ImpressionistUI* pUI = ((ImpressionistUI*)(o->user_data()));
 	int type = (int)v;
@@ -698,7 +705,11 @@ void ImpressionistUI::cb_painterlyStrokeType(Fl_Widget* o, void* v) {
 }
 
 void ImpressionistUI::cb_painterly_run_button(Fl_Widget* o, void* v) {
-
+	if (((ImpressionistUI*)(o->user_data()))->getDocument()->m_ucBitmap == NULL) {
+		fl_alert("Please load an image first£¡");
+			return;
+	}
+	((ImpressionistUI*)(o->user_data()))->getDocument()->PainterlyStart();
 }
 
 void ImpressionistUI::cb_painterlyThresholdSlides(Fl_Widget* o, void* v) {
@@ -710,7 +721,14 @@ void ImpressionistUI::cb_paintlyCurvatureSlides(Fl_Widget* o, void* v) {
 }
 
 void ImpressionistUI::cb_painterlyBlurSlides(Fl_Widget* o, void* v) {
-	((ImpressionistUI*)(o->user_data()))->m_nPainterlyBlur = float(((Fl_Slider *)o)->value());
+		float data = float(((Fl_Slider *)o)->value());
+		if (((ImpressionistUI*)(o->user_data()))->m_nPainterlyBlur == data) {
+			((ImpressionistUI*)(o->user_data()))->m_nPainterlyBlurChanged = false;
+		}
+		else {
+			((ImpressionistUI*)(o->user_data()))->m_nPainterlyBlur = data;
+			((ImpressionistUI*)(o->user_data()))->m_nPainterlyBlurChanged = true;
+		}
 }
 
 void ImpressionistUI::cb_painterlyGridSizeSlides(Fl_Widget* o, void* v) {
@@ -736,7 +754,7 @@ void ImpressionistUI::cb_painterlyLayerSlides(Fl_Widget* o, void* v) {
 void ImpressionistUI::cb_painterlyR0LevelSlides(Fl_Widget* o, void* v) {
 	((ImpressionistUI*)(o->user_data()))->m_nPainterlyR0Level = float(((Fl_Slider *)o)->value());
 }
-
+/*
 void ImpressionistUI::cb_painterlyJrSlides(Fl_Widget* o, void* v) {
 	((ImpressionistUI*)(o->user_data()))->m_nPainterlyJr= float(((Fl_Slider *)o)->value());
 }
@@ -761,7 +779,7 @@ void ImpressionistUI::cb_painterlyJvSlides(Fl_Widget* o, void* v) {
 	((ImpressionistUI*)(o->user_data()))->m_nPainterlyJv = float(((Fl_Slider *)o)->value());
 }
 
-
+*/
 
 
 
@@ -944,6 +962,7 @@ Fl_Menu_Item ImpressionistUI::brushTypeMenu[NUM_BRUSH_TYPE+1] = {
   { "Sharpen",	FL_ALT + 'n', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_SHARPEN_POINTS },
   { "Blur",	FL_ALT + 'u', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_BLUR_POINTS },
   { "Alpha Map",	FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_ALPHA_MAP },
+  { "Curve",	FL_ALT + 'u', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_CURVE },
   {0}
 };
 
@@ -953,7 +972,7 @@ Fl_Menu_Item ImpressionistUI::brushDirectionControlType[3] = {
 	{ "Gradient",				FL_ALT + 'g', (Fl_Callback *)ImpressionistUI::cb_brushDirectionType, (void *)GRADIENT },
 	{ "Brush Direction",			FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushDirectionType, (void *)CURSOR }
 };
-
+/*
 // painterly style menu
 Fl_Menu_Item ImpressionistUI::painterlyStyleType[5] = {
 	{ "Impressionist",			FL_ALT + '1', (Fl_Callback *)ImpressionistUI::cb_painterly_Type, (void *)IMPRESSIONIST },
@@ -962,13 +981,14 @@ Fl_Menu_Item ImpressionistUI::painterlyStyleType[5] = {
 	{ "Pointillist",			FL_ALT + '4', (Fl_Callback *)ImpressionistUI::cb_painterly_Type, (void *)POINTILLIST },
 	{ "Customize",			FL_ALT + '5', (Fl_Callback *)ImpressionistUI::cb_painterly_Type, (void *)CUSTOMIZE }
 };
+*/
 //painterly stroke menu
 Fl_Menu_Item ImpressionistUI::painterlyStrokeType[4] = 
 {
-	{ "Curve Brush",			FL_ALT + '6', (Fl_Callback *)ImpressionistUI::cb_painterlyStrokeType, (void *)P_CURVE_BRUSH },
-	{ "Circle Brush",				FL_ALT + '7', (Fl_Callback *)ImpressionistUI::cb_painterlyStrokeType, (void *)P_CIRCLE_BRUSH },
-	{ "Clip Line Brush",			FL_ALT + '8', (Fl_Callback *)ImpressionistUI::cb_painterlyStrokeType, (void *)P_CLIP_LINE_BRUSH },
-	{ "Line Brush",			FL_ALT + '9', (Fl_Callback *)ImpressionistUI::cb_painterlyStrokeType, (void *)P_LINE_BRUSH },
+	{ "Curve Brush",			FL_ALT + '6', (Fl_Callback *)ImpressionistUI::cb_painterlyStrokeType, (void *)BRUSH_CURVE },
+	{ "Circle Brush",				FL_ALT + '7', (Fl_Callback *)ImpressionistUI::cb_painterlyStrokeType, (void *)BRUSH_CIRCLES},
+	{ "Point Brush",			FL_ALT + '8', (Fl_Callback *)ImpressionistUI::cb_painterlyStrokeType, (void *)BRUSH_POINTS },
+	{ "Line Brush",			FL_ALT + '9', (Fl_Callback *)ImpressionistUI::cb_painterlyStrokeType, (void *)BRUSH_LINES },
 };
 //----------------------------------------------------
 // Constructor.  Creates all of the widgets.
@@ -1062,7 +1082,7 @@ ImpressionistUI::ImpressionistUI() {
 	//painterly dialog
 
 	m_nPainterlyCurrentStyle = IMPRESSIONIST;
-	m_nPainterlyCurrentStroke = P_CURVE_BRUSH;
+	m_nPainterlyCurrentStroke = BRUSH_CURVE;
 	m_nPainterlyThreshold = 100;
 	m_nPainterlyCurvature = 1.0;
 	m_nPainterlyBlur = 0.50;
@@ -1072,25 +1092,29 @@ ImpressionistUI::ImpressionistUI() {
 	m_nPainterlyAlpha = 1.00;
 	m_nPainterlyLayers = 3;
 	m_nPainterlyR0Level = 3;
-	m_nPainterlyJr = 0;
-	m_nPainterlyJg = 0;
-	m_nPainterlyJb = 0;
-	m_nPainterlyJh = 0;
-	m_nPainterlyJs = 0;
-	m_nPainterlyJv = 0;
-	m_painterlylDialog = new Fl_Window(400, 270, "Painterly Dialog");
-
+	/*
+	m_nPainterlyJr = 1;
+	m_nPainterlyJg = 1;
+	m_nPainterlyJb = 1;
+	m_nPainterlyJh = 1;
+	m_nPainterlyJs = 1;
+	m_nPainterlyJv = 1;
+	*/
+	m_nPainterlyRun = false;
+	m_nPaintrelyIsInitialized = false;
+	m_painterlylDialog = new Fl_Window(300, 270, "Painterly Dialog");
+	/*
 	m_painterlyStyle = new Fl_Choice(50, 10, 120, 20, "&Style");
 	m_painterlyStyle->user_data((void*)(this));	// record self to be used by static callback functions
 	m_painterlyStyle->menu(painterlyStyleType);
 	m_painterlyStyle->callback(cb_painterly_Type);
-
-	m_painterlyStroke = new Fl_Choice(230, 10, 100, 20, "&Stroke");
+	*/
+	m_painterlyStroke = new Fl_Choice(60, 10, 120, 20, "&Stroke");
 	m_painterlyStroke->user_data((void*)(this));	// record self to be used by static callback functions
 	m_painterlyStroke->menu(painterlyStrokeType);
 	m_painterlyStroke->callback(cb_painterlyStrokeType);
 
-	m_painterlyRun = new Fl_Button(340, 10, 40, 20, "&Run");
+	m_painterlyRun = new Fl_Button(240, 10, 40, 20, "&Run");
 	m_painterlyRun->user_data((void*)(this));
 	m_painterlyRun->callback(cb_painterly_run_button);
 
@@ -1202,13 +1226,14 @@ ImpressionistUI::ImpressionistUI() {
 	m_painterlyR0Level->align(FL_ALIGN_RIGHT);
 	m_painterlyR0Level->callback(cb_painterlyR0LevelSlides);
 
+	/*
 	m_painterlyJr = new Fl_Value_Slider(300, 40, 25, 80, "Jr");
 	m_painterlyJr->user_data((void*)(this));
 	m_painterlyJr->type(FL_VERT_NICE_SLIDER);
 	m_painterlyJr->labelfont(FL_COURIER);
 	m_painterlyJr->labelsize(12);
-	m_painterlyJr->minimum(0.00);
-	m_painterlyJr->maximum(1);
+	m_painterlyJr->minimum(1.00);
+	m_painterlyJr->maximum(0);
 	m_painterlyJr->step(0.01);
 	m_painterlyJr->value(m_nPainterlyJr);
 	m_painterlyJr->align(FL_ALIGN_BOTTOM);
@@ -1219,8 +1244,8 @@ ImpressionistUI::ImpressionistUI() {
 	m_painterlyJg->type(FL_VERT_NICE_SLIDER);
 	m_painterlyJg->labelfont(FL_COURIER);
 	m_painterlyJg->labelsize(12);
-	m_painterlyJg->minimum(0.00);
-	m_painterlyJg->maximum(1.00);
+	m_painterlyJg->minimum(1.00);
+	m_painterlyJg->maximum(0.00);
 	m_painterlyJg->step(0.01);
 	m_painterlyJg->value(m_nPainterlyJg);
 	m_painterlyJg->align(FL_ALIGN_BOTTOM);
@@ -1231,8 +1256,8 @@ ImpressionistUI::ImpressionistUI() {
 	m_painterlyJb->type(FL_VERT_NICE_SLIDER);
 	m_painterlyJb->labelfont(FL_COURIER);
 	m_painterlyJb->labelsize(12);
-	m_painterlyJb->minimum(0.00);
-	m_painterlyJb->maximum(1.00);
+	m_painterlyJb->minimum(1.00);
+	m_painterlyJb->maximum(0.00);
 	m_painterlyJb->step(0.01);
 	m_painterlyJb->value(m_nPainterlyJb);
 	m_painterlyJb->align(FL_ALIGN_BOTTOM);
@@ -1243,8 +1268,8 @@ ImpressionistUI::ImpressionistUI() {
 	m_painterlyJh->type(FL_VERT_NICE_SLIDER);
 	m_painterlyJh->labelfont(FL_COURIER);
 	m_painterlyJh->labelsize(12);
-	m_painterlyJh->minimum(0);
-	m_painterlyJh->maximum(1);
+	m_painterlyJh->minimum(1);
+	m_painterlyJh->maximum(0);
 	m_painterlyJh->step(0.01);
 	m_painterlyJh->value(m_nPainterlyJh);
 	m_painterlyJh->align(FL_ALIGN_BOTTOM);
@@ -1255,8 +1280,8 @@ ImpressionistUI::ImpressionistUI() {
 	m_painterlyJs->type(FL_VERT_NICE_SLIDER);
 	m_painterlyJs->labelfont(FL_COURIER);
 	m_painterlyJs->labelsize(12);
-	m_painterlyJs->minimum(0);
-	m_painterlyJs->maximum(1);
+	m_painterlyJs->minimum(1);
+	m_painterlyJs->maximum(0);
 	m_painterlyJs->step(0.01);
 	m_painterlyJs->value(m_nPainterlyJs);
 	m_painterlyJs->align(FL_ALIGN_BOTTOM);
@@ -1267,8 +1292,8 @@ ImpressionistUI::ImpressionistUI() {
 	m_painterlyJv->type(FL_VERT_NICE_SLIDER);
 	m_painterlyJv->labelfont(FL_COURIER);
 	m_painterlyJv->labelsize(12);
-	m_painterlyJv->minimum(0);
-	m_painterlyJv->maximum(1);
+	m_painterlyJv->minimum(1);
+	m_painterlyJv->maximum(0);
 	m_painterlyJv->step(0.01);
 	m_painterlyJv->value(m_nPainterlyJv);
 	m_painterlyJv->align(FL_ALIGN_BOTTOM);
@@ -1290,7 +1315,7 @@ ImpressionistUI::ImpressionistUI() {
 	m_painterlyJh->deactivate();
 	m_painterlyJs->deactivate();
 	m_painterlyJv->deactivate();
-	
+	*/
 	m_painterlylDialog->end();
 
 

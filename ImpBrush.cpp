@@ -51,12 +51,16 @@ void ImpBrush::SetColor (const Point source)
 
 	memcpy ( color, pDoc->GetOriginalPixel( source ), 3 );
 	color[3] = GLubyte(pDoc->getAlpha()*255);
+
 	glColor4ubv( color );
 
 }
 
 void ImpBrush::saveState() {
+	if (GetDocument()->m_pUI->m_nPainterlyRun)
+		return;
 	unsigned char* currentState = new unsigned char[m_pDoc->m_nWidth*m_pDoc->m_nHeight * 4];
 	memcpy(currentState, m_pDoc->m_ucPainting, m_pDoc->m_nWidth*m_pDoc->m_nHeight * 4);
 	m_pDoc->history.push(currentState);
 }
+

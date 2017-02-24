@@ -32,7 +32,9 @@ void CircleBrush::BrushMove(const Point source, const Point target)
 
 	int triangleAmount = 100;
 	int size = pDoc->getSize();
-	float radius = size / 2.0;
+	float radius = size;
+	if (radius < 1)
+		radius = 1;
 	float twoPi = 3.1415927*2.0;
 
 	if (pDoc == NULL) {

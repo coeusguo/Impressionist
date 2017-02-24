@@ -30,7 +30,7 @@ using namespace std;
 //painterly style and stroke enum
 
 enum {IMPRESSIONIST = 0,EXPRESSIONIST,COLOR_WASH,POINTILLIST,CUSTOMIZE};
-enum {P_CURVE_BRUSH = 0,P_CIRCLE_BRUSH,P_CLIP_LINE_BRUSH,P_LINE_BRUSH};
+
 class ImpressionistUI {
 public:
 	ImpressionistUI();
@@ -103,31 +103,38 @@ public:
 	Fl_Slider*			m_painterlyLayers;
 	Fl_Slider*			m_painterlyR0Level;
 	//vertical sliders
+	/*
 	Fl_Slider*			m_painterlyJr;
 	Fl_Slider*			m_painterlyJg;
 	Fl_Slider*			m_painterlyJb;
 	Fl_Slider*			m_painterlyJh;
 	Fl_Slider*			m_painterlyJs;
 	Fl_Slider*			m_painterlyJv;
-
+	*/
 	//painterly variables
 	int		m_nPainterlyCurrentStyle;
 	int		m_nPainterlyCurrentStroke;
 	int		m_nPainterlyThreshold;
 	float   m_nPainterlyCurvature;
 	float   m_nPainterlyBlur;
+	bool	m_nPainterlyBlurChanged;
+	bool	m_nPainterlyRun;
+	bool	m_nPaintrelyIsInitialized;
 	float   m_nPainterlyGirdSize;
 	int		m_nPainterlyMinStrokeL;
 	int		m_nPainterlyMaxStrokeL;
 	float   m_nPainterlyAlpha;
 	int		m_nPainterlyLayers;
 	int		m_nPainterlyR0Level;
+	/*
 	float	m_nPainterlyJr;
 	float	m_nPainterlyJg;
 	float	m_nPainterlyJb;
 	float	m_nPainterlyJh;
 	float	m_nPainterlyJs;
 	float	m_nPainterlyJv;
+	*/
+	int		m_nPainterlyBrushSize;
 	// Member functions
 	void				setDocument(ImpressionistDoc* doc);
 	ImpressionistDoc*	getDocument();
@@ -233,7 +240,15 @@ private:
 	static void cb_toggle_cliping_button(Fl_Widget* o, void* v);
 	static void cb_another_gradient_button(Fl_Widget* o, void* v);
 	//painterly
+	/*
 	static void cb_painterly_Type(Fl_Widget* o, void* v);
+	static void cb_painterlyJrSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyJgSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyJbSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyJhSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyJsSlides(Fl_Widget* o, void* v);
+	static void cb_painterlyJvSlides(Fl_Widget* o, void* v);
+	*/
 	static void cb_painterlyStrokeType(Fl_Widget* o, void* v);
 	static void cb_painterly_run_button(Fl_Widget* o, void* v);
 	static void cb_painterlyThresholdSlides(Fl_Widget* o, void* v);
@@ -245,12 +260,7 @@ private:
 	static void cb_painterlyAlphaSlides(Fl_Widget* o, void* v);
 	static void cb_painterlyLayerSlides(Fl_Widget* o, void* v);
 	static void cb_painterlyR0LevelSlides(Fl_Widget* o, void* v);
-	static void cb_painterlyJrSlides(Fl_Widget* o, void* v);
-	static void cb_painterlyJgSlides(Fl_Widget* o, void* v);
-	static void cb_painterlyJbSlides(Fl_Widget* o, void* v);
-	static void cb_painterlyJhSlides(Fl_Widget* o, void* v);
-	static void cb_painterlyJsSlides(Fl_Widget* o, void* v);
-	static void cb_painterlyJvSlides(Fl_Widget* o, void* v);
+	
 };
 
 #endif

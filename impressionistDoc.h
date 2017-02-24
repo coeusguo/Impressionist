@@ -46,6 +46,10 @@ public:
 	void 	applyFilter(int row, int col, int kernelWidth, int kernelHeight,float* kernel,float* rgb,unsigned char* painting);
 	int*	applySobel(int row, int col,const unsigned char* source);
 	void	applyGaussianFilter(unsigned char* source, unsigned char* target,int width,int height);
+	void	applyPainterlyGaussianFilter(float blurFactor);
+	void    PainterlyStart();
+	
+	void	testing();
 	//int*    getGradientBySobel(const unsigned char* image, int width, int height);
 	void	generateEdgeImage();
 	stack<unsigned char*>	history;
@@ -65,6 +69,7 @@ public:
 	unsigned char*	m_ucBitmap;
 	unsigned char*  m_ucEdgeBitmap;//edge bitmap of m_ucBitmap or loaded black and white bitmap
 	unsigned char*  m_ucGrayScaleMap;//m_ucBitmap gray scale map
+	unsigned char*  m_ucBitmapBlur;
 	float*			m_ucGradientMap;//gradient value of each pixel of m_ucBitmap
 	bool*			m_ucEdgePositionMap;//edge position of uc_edgeBitmap,used by edge clipping
 	int*			m_ucGradientXYmap;
