@@ -24,6 +24,8 @@
 #include "BlurBrush.h"
 #include "AlphaMapBrush.h"
 #include "CurveBrush.h"
+#include "TriangleBrush.h"
+#include "MosaicBrush.h"
 #include <iostream>
 
 
@@ -49,6 +51,7 @@ ImpressionistDoc::ImpressionistDoc()
 	m_ucAnotherGradientMap = NULL;
 	m_ucGradientXYmap = NULL;//store the Gx and Gy in each pixel of m_ucBitmap
 	m_ucBitmapBlur = NULL;
+	m_ucBitmapMosaic = NULL;
 
 	// create one instance of each brush
 	ImpBrush::c_nBrushCount	= NUM_BRUSH_TYPE;
@@ -78,6 +81,10 @@ ImpressionistDoc::ImpressionistDoc()
 		= new AlphaMapBrush(this,"Alpha Map");
 	ImpBrush::c_pBrushes[BRUSH_CURVE]
 		= new CurveBrush(this, "Curve");
+	ImpBrush::c_pBrushes[BRUSH_TRIANGLE]
+		= new TriangleBrush(this, "Triangle");
+	ImpBrush::c_pBrushes[BRUSH_MOSAIC]
+		= new MosaicBrush(this, "Mosaic");
 
 	// make one of the brushes current
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[0];
@@ -93,6 +100,7 @@ ImpressionistDoc::ImpressionistDoc()
 	gaussianFilter[0] = 0.0625; gaussianFilter[1] = 0.125; gaussianFilter[2] = 0.0625;
 	gaussianFilter[3] = 0.125; gaussianFilter[4] = 0.25; gaussianFilter[5] = 0.125;
 	gaussianFilter[6] = 0.0625; gaussianFilter[7] = 0.125; gaussianFilter[8] = 0.0625;
+
 }
 
 
@@ -183,6 +191,7 @@ int ImpressionistDoc::loadImage(char *iname)
 	if (m_ucGradientXYmap)delete[]m_ucGradientXYmap;
 	if (m_ucAnotherBitmap)delete[]m_ucAnotherBitmap;
 	if (m_ucBitmapBlur)delete[]m_ucBitmapBlur;
+	if (m_ucBitmapMosaic)delete[]m_ucBitmapMosaic;
 	m_ucAnotherBitmap = NULL;
 	if (m_ucAnotherGradientMap)delete[]m_ucAnotherGradientMap;
 	m_ucAnotherGradientMap = NULL;
@@ -220,6 +229,10 @@ int ImpressionistDoc::loadImage(char *iname)
 	//testing();
 	//memcpy(m_ucBitmap, m_ucBitmapBlur, width*height * 3);
 	// display it on origView
+
+
+	generateMosaicMap();
+
 	m_pUI->m_origView->resizeWindow(width, height);	
 	m_pUI->m_origView->refresh();
 
@@ -543,7 +556,19 @@ GLubyte* ImpressionistDoc::GetOriginalPixel( int x, int y )
 	return (GLubyte*)(m_ucBitmap + 3 * (y*m_nWidth + x));
 }
 
+GLubyte* ImpressionistDoc::getMosaicMapPixel(int x, int y) {
+	if (x < 0)
+		x = 0;
+	else if (x >= m_nWidth)
+		x = m_nWidth - 1;
 
+	if (y < 0)
+		y = 0;
+	else if (y >= m_nHeight)
+		y = m_nHeight - 1;
+
+	return (GLubyte*)(m_ucBitmapMosaic + 3 * (y*m_nWidth + x));
+}
 //----------------------------------------------------------------
 // Get the color of the pixel in the original image at point p
 //----------------------------------------------------------------
@@ -842,3 +867,28 @@ void ImpressionistDoc::testing() {
 	applyPainterlyGaussianFilter(0.5);
 
 }
+
+void ImpressionistDoc::generateMosaicMap() {
+	if (m_ucBitmapMosaic)delete[]m_ucBitmapMosaic;
+	if (m_ucBitmap == NULL)
+		return;
+	m_ucBitmapMosaic = new unsigned char[m_nWidth*m_nHeight * 3];
+
+	int grid = getSize() / 2 * 2 + 1;
+
+	for (int Y = grid / 2; Y <= m_nHeight - grid / 2;Y+=grid) {
+		for (int X = grid / 2; X <= m_nWidth - grid / 2; X += grid) {
+			for (int y = Y - grid / 2; y <= Y + grid / 2; y++) {
+				for (int x = X - grid / 2; x <= X + grid / 2; x++) {
+					m_ucBitmapMosaic[(y*m_nWidth + x) * 3] = m_ucBitmap[(Y*m_nWidth + X) * 3];
+					m_ucBitmapMosaic[(y*m_nWidth + x) * 3 + 1] = m_ucBitmap[(Y*m_nWidth + X) * 3 + 1];
+					m_ucBitmapMosaic[(y*m_nWidth + x) * 3 + 2] = m_ucBitmap[(Y*m_nWidth + X) * 3 + 2];
+				}
+			}
+		
+		}
+	}
+
+	//memcpy(m_ucBitmap, m_ucBitmapMosaic, m_nWidth*m_nHeight * 3);
+}
+

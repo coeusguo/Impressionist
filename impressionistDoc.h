@@ -17,9 +17,12 @@ class ImpressionistUI;
 //the type of the line brush direction control
 enum {SLIDER_RMOUSE = 0,GRADIENT,CURSOR,ANOTHER_IMAGE_GRADIENT};
 enum {GRADIENT_VALUE,GRADIENT_ANGLE,GRADIENT_XY};
+
 class ImpressionistDoc 
 {
 public:
+
+
 	ImpressionistDoc();
 
 	void	setUI(ImpressionistUI* ui);		// Assign the UI to use
@@ -48,6 +51,7 @@ public:
 	void	applyGaussianFilter(unsigned char* source, unsigned char* target,int width,int height);
 	void	applyPainterlyGaussianFilter(float blurFactor);
 	void    PainterlyStart();
+	void	generateMosaicMap();
 	
 	void	testing();
 	//int*    getGradientBySobel(const unsigned char* image, int width, int height);
@@ -73,6 +77,8 @@ public:
 	float*			m_ucGradientMap;//gradient value of each pixel of m_ucBitmap
 	bool*			m_ucEdgePositionMap;//edge position of uc_edgeBitmap,used by edge clipping
 	int*			m_ucGradientXYmap;
+
+	unsigned char*  m_ucBitmapMosaic;
 
 	unsigned char*  m_ucAnotherBitmap;//another bitmap graycale form
 	float*			m_ucAnotherGradientMap;//gradient of another image
@@ -107,6 +113,8 @@ public:
 	GLubyte* GetOriginalPixel( int x, int y );   
 	// Get the color of the original picture at the specified point	
 	GLubyte* GetOriginalPixel( const Point p );  
+
+	GLubyte*   getMosaicMapPixel(int x,int y);
 
 	int sobelVertical[9];
 	int sobelHorizontal[9];

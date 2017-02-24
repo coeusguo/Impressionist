@@ -259,6 +259,13 @@ void ImpressionistUI::cb_brushChoice(Fl_Widget* o, void* v)
 
 
 	pDoc->setBrushType(type);
+
+	if (type == BRUSH_MOSAIC)
+		pUI->m_AlphaSlider->deactivate();
+	else
+		pUI->m_AlphaSlider->activate();
+
+
 	if (type != BRUSH_LINES && type != BRUSH_SCATTERED_LINES) {
 		pUI->m_LineWidthSlider->deactivate();
 		pUI->m_LineAngleSlider->deactivate();
@@ -285,6 +292,9 @@ void ImpressionistUI::cb_brushChoice(Fl_Widget* o, void* v)
 		pUI->m_BrushSizeSlider->activate();
 		pUI->m_AlphaSlider->activate();
 	}
+
+	
+	
 }
 
 void ImpressionistUI::cb_brushDirectionType(Fl_Widget* o, void* v) {
@@ -953,6 +963,7 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 // Brush choice menu definition
 Fl_Menu_Item ImpressionistUI::brushTypeMenu[NUM_BRUSH_TYPE+1] = {
   {"Points",			FL_ALT+'p', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_POINTS},
+  { "Triangle",	FL_ALT + 'w', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_TRIANGLE },
   {"Lines",				FL_ALT+'l', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_LINES},
   {"Circles",			FL_ALT+'c', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_CIRCLES},
   {"Scattered Points",	FL_ALT+'q', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_SCATTERED_POINTS},
@@ -961,8 +972,10 @@ Fl_Menu_Item ImpressionistUI::brushTypeMenu[NUM_BRUSH_TYPE+1] = {
   { "Gray",	FL_ALT + 'r', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_GRAY_POINTS },
   { "Sharpen",	FL_ALT + 'n', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_SHARPEN_POINTS },
   { "Blur",	FL_ALT + 'u', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_BLUR_POINTS },
+  { "Mosaic",	FL_ALT + 'o', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_MOSAIC },
   { "Alpha Map",	FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_ALPHA_MAP },
-  { "Curve",	FL_ALT + 'u', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_CURVE },
+  { "Curve",	FL_ALT + 'e', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_CURVE },
+ 
   {0}
 };
 

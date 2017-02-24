@@ -23,6 +23,9 @@ enum
 	BRUSH_BLUR_POINTS,
 	BRUSH_ALPHA_MAP,
 	BRUSH_CURVE,
+	BRUSH_WARP,
+	BRUSH_TRIANGLE,
+	BRUSH_MOSAIC,
 	NUM_BRUSH_TYPE // Make sure this stays at the end!
 };
 
