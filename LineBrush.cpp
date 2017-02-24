@@ -109,7 +109,7 @@ void LineBrush::BrushMove(const Point source, const Point target)
 		else
 		{
 			angle = (int)((atan2(yDifference, xDifference) * 180 / M_PI) + 360) % 360;
-			//pDoc->setLineAngle(angle);
+			pDoc->setLineAngle(angle);
 		}
 
 		break;
